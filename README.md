@@ -16,5 +16,4 @@ Also known as pinning, this allows you to react with the 📌 (`:pushpin`) emote
 Report a users message with a context command, just right click on the problematic message and hit "Report" 
 
 ## Links
-* [Invite](https://discord.com/api/oauth2/authorize?client_id=1028198032468082728&permissions=8&scope=bot%20applications.commands) the bot
 * Join [our Discord](https://discord.gg/DXJX7kyFgH)

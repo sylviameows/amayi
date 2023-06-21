@@ -5,6 +5,10 @@
 node_modules/
 dist/
 
+# Startup Scripts:
+*.sh
+*.bat
+
 # Private:
 *.sqlite
 .env
