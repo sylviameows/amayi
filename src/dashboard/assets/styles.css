@@ -1,0 +1,30 @@
+body {
+  background-color: var(--bs-dark);
+  color: var(--bs-white);
+  height: 100vh;
+  overflow-x: hidden;
+}
+
+.bg-dark {
+  background-color: #292d32 !important;
+}
+
+.card {
+  background-color: #292d32;
+}
+.card-body, .card-text {
+  color: #fff;
+}
+
+.dropdown-menu {
+  background-color: #292d32;
+  color: #fff;
+}
+.dropdown-item {
+  background-color: transparent;
+  color: var(--bs-light);
+}
+.dropdown-item:hover {
+  background-color: var(--bs-dark);
+  color: #fff;
+}

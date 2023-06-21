@@ -1,0 +1,11 @@
+# Code environment:
+.vscode
+
+# Dependencies/Builds:
+node_modules/
+dist/
+
+# Private:
+*.sqlite
+.env
+*.log

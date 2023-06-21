@@ -1,0 +1,53 @@
+<%- include("partials/header", { bot, user, path, title: `Settings | ${guild.name}` }) %>
+
+<div class="container-sm center" style="margin-top: 30px;">
+  <div class="d-grid gap-2 col-4 mx-auto">
+    <% if (alert) { %>
+      <div class="alert alert-success" role="alert">
+        <%= alert %>
+      </div>
+    <% } %>
+    <h1><%= guild.name %></h1>
+    <hr>
+    <form method="POST">
+
+      <p class="h5" style="margin-bottom: 0.5rem; margin-top: 10px;">Prefix:</p>
+      <p style="font-style: italic;" class="disabled">The prefix that is added to discord messages in order to invoke commands.</p>
+      <input type="text" class="form-control" name="prefix" value="<%= settings.prefix %>" placeholder="your prefix (ex. 'ayi ')">
+
+      <br>
+
+      <p class="h5" style="margin-bottom: 0.5rem; margin-top: 10px;">Petitions:</p>
+      <p style="font-style: italic;">Settings for the petitions feature of Amayi.</p>
+      <input type="checkbox" class="form-check-input" name="petitions_enabled" value="true" <% if (settings.config.petitions.enabled) {%>checked<%}%>> Enable petitions<br>
+      <br><p style="font-style: italic;" class="disabled">The channel that petitions are sent to in the server.</p>
+      <input type="text" class="form-control" name="petitions_channel" value="<%= settings.config.petitions.channel_id %>" placeholder="channel id (ex. '148831815984087041')">
+      <br><p style="font-style: italic;" class="disabled">The role that is pinged when a petition is sent, leave empty for no ping.</p>
+      <input type="text" class="form-control" name="petitions_role" value="<%= settings.config.petitions.role %>" placeholder="role id (ex. '894314069488701490')">
+
+      <br>
+
+      <p class="h5" style="margin-bottom: 0.5rem; margin-top: 10px;">Quotes:</p>
+      <p style="font-style: italic;">Settings for the petitions feature of Amayi.</p>
+      <input type="checkbox" class="form-check-input" name="quotes_enabled" value="true" <% if (settings.config.petitions.enabled) {%>checked<%}%>> Enable quotes.<br>
+      <br><p style="font-style: italic;" class="disabled">The channel that quotes are sent to in the server.</p>
+      <input type="text" class="form-control" name="quotes_channel" value="<%= settings.config.quotes.channel_id %>" placeholder="channel id (ex. '148831815984087041')">
+      <br><p style="font-style: italic;" class="disabled">The role that is pinged when a quote is made, leave empty for no ping.</p>
+      <input type="text" class="form-control" name="quotes_role" value="<%= settings.config.quotes.role %>" placeholder="role id (ex. '894314069488701490')">
+      
+      <br>
+
+      <p class="h5" style="margin-bottom: 0.5rem; margin-top: 10px;">Reporting:</p>
+      <p style="font-style: italic;">Settings for the petitions feature of Amayi.</p>
+      <input type="checkbox" class="form-check-input" name="reporting_enabled" value="true" <% if (settings.config.petitions.enabled) {%>checked<%}%>> Enable reporting<br>
+      <br><p style="font-style: italic;" class="disabled">The channel that reports are sent to in the server.</p>
+      <input type="text" class="form-control" name="reporting_channel" value="<%= settings.config.reporting.channel_id %>" placeholder="channel id (ex. '148831815984087041')">
+      <br><p style="font-style: italic;" class="disabled">The role that is pinged when a report is made, leave empty for no ping.</p>
+      <input type="text" class="form-control" name="reporting_role" value="<%= settings.config.reporting.role %>" placeholder="role id (ex. '894314069488701490')">
+
+      <br><button type="submit" class="btn btn-secondary">Save Settings</button>
+    </form>
+  </div>
+</div>
+
+<%- include("partials/footer") %>
