@@ -156,6 +156,8 @@ export default async (client: Amayi) => {
     settings.prefix = req.body.prefix;
 
     try {
+      settings.config!.staff_roles = [req.body.staff_role]
+
       settings.config!.petitions!.enabled = req.body.petitions_enabled
       settings.config!.petitions!.channel_id = req.body.petitions_channel
       settings.config!.petitions!.role = req.body.petitions_role

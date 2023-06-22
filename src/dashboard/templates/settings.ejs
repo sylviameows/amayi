@@ -14,6 +14,12 @@
       <p class="h5" style="margin-bottom: 0.5rem; margin-top: 10px;">Prefix:</p>
       <p style="font-style: italic;" class="disabled">The prefix that is added to discord messages in order to invoke commands.</p>
       <input type="text" class="form-control" name="prefix" value="<%= settings.prefix %>" placeholder="your prefix (ex. 'ayi ')">
+      
+      <br>
+      
+      <p class="h5" style="margin-bottom: 0.5rem; margin-top: 10px;">Staff Role:</p>
+      <p style="font-style: italic;" class="disabled">The role that is used to determine who is staff.</p>
+      <input type="text" class="form-control" name="staff_role" value="<%= settings.config.staff_roles[0] %>" placeholder="role id (ex. '894314069488701490')">
 
       <br>
 
