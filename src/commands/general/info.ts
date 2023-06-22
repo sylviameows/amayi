@@ -36,8 +36,8 @@ export default class HelpCommand extends Command {
     const embed = new EmbedBuilder({
       fields: [
         {name: "Name", value: codeBlock("sh", args.user.tag), inline: true}, // potentially add badges?
-        {name: "Pronouns", value: codeBlock("js", "unfi/nished"), inline: true},
-        {name: "Bio", value: 'coming soon.'}
+        // {name: "Pronouns", value: codeBlock("js", "unfi/nished"), inline: true},
+        // {name: "Bio", value: 'coming soon.'}
       ],
       color: Colors.embed_dark,
       thumbnail: avatar ? { url: avatar } : undefined,
