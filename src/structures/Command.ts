@@ -1,4 +1,4 @@
-import { ApplicationCommandData, ApplicationCommandType, Client, Interaction, PermissionResolvable } from "discord.js";
+import { ApplicationCommandData, ApplicationCommandType, AutocompleteInteraction, Client, Interaction, PermissionResolvable } from "discord.js";
 import { CommandData } from "../declarations";
 import Amayi from "./Amayi";
 
@@ -28,6 +28,10 @@ export class Command {
   }
 
   async run(interaction: Interaction) {
+    throw new Error(`The command "${this.name}" does not provide a run method.`)
+  }
+
+  async autocomplete(interaction: AutocompleteInteraction) {
     throw new Error(`The command "${this.name}" does not provide a run method.`)
   }
 }
