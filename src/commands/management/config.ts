@@ -1,4 +1,4 @@
-import { APIActionRowComponent, APIMessageActionRowComponent, ActionRowBuilder, ActionRowComponent, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, Interaction, StringSelectMenuBuilder } from "discord.js";
+import { APIActionRowComponent, APIMessageActionRowComponent, ActionRowBuilder, ActionRowComponent, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, GuildMemberRoleManager, Interaction, PermissionsBitField, StringSelectMenuBuilder } from "discord.js";
 import Amayi from "../../structures/Amayi";
 import { Command } from "../../structures/Command";
 import GuildSchema from "../../models/GuildSchema";
@@ -12,6 +12,8 @@ export default class ConfigCommand extends Command {
     super(client, {
       name: "config",
       description: "Configure your guild.",
+      dmPermission: false,
+      defaultMemberPermissions: ["ManageGuild"],
       options: [
         { 
           name: "prefix", 
@@ -39,6 +41,8 @@ export default class ConfigCommand extends Command {
 
     // change prefix for the guild if that option is selected.
     if (args.prefix) {
+      const member = interaction.member // making sure only people with manage server can change this setting
+      if (!member || !(member.permissions as Readonly<PermissionsBitField>).has("ManageGuild")) return
       if (args.prefix == "ayi") args.prefix = "ayi "
       model.prefix = args.prefix
       await interaction.deferReply({ ephemeral })

@@ -1,9 +1,9 @@
 import Uwuifier from "uwuifier";
 
 export const Dashboard = {
-  domain: "http://localhost",
-  port: 8080,
-  custom: false // is this a custom domain?
+  domain: "http://apollo.arcator.co.uk",
+  port: 8081,
+  custom: true // is this a custom domain?
 }
 
 export const Colors = {
