@@ -32,10 +32,11 @@ export default class HelpCommand extends Command {
     const embed = new EmbedBuilder({
       title: "About Amayi",
       description: [
-        "Amayi is developed by `Vulpic#7676`, icons created by [Danu](https://discord.gg/9AtkECMX2P)",
+        "Amayi is developed by `@vulpic`, icons created by [Danu](https://discord.gg/9AtkECMX2P)",
         "I was created to help bring together people in communities with a variety of commands like petitions and macros.", // replace with </petitions:id> later
         "",
         "**Additional Information**",
+        "Macros can be used with the prefix `ayi ` by default.", // fix to show server prefix later
         "If you need help setting up the bot feel free to join our [support server](https://discord.gg/DXJX7kyFgH).",
       ].join('\n'),
       color: Colors.amayi_pink,
