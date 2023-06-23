@@ -15,7 +15,7 @@ export default class ReactionEvent extends BotEvent {
   async run(reaction: MessageReaction, user: User): Promise<void> {
     const message = reaction.message
 
-    if (reaction.emoji.name != "📌" && reaction.count > 1) return // any reaction without the pin should be ignored. additionally ignores any reaction but the first.
+    if (reaction.emoji.name != "📌" || reaction.count > 1) return // any reaction without the pin should be ignored. additionally ignores any reaction but the first.
     if (reaction.me) return; // ignore any reactions created by me or that have already been pinned.
 
     if (message.partial) await message.fetch().catch((e) => console.log(e))
