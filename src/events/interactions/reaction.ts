@@ -21,7 +21,7 @@ export default class ReactionEvent extends BotEvent {
     if (message.partial) await message.fetch().catch((e) => console.log(e))
 
     if (!message.guild) return;
-    if ((!message.content && !message.content) || !message.channel.isTextBased()) return // ignores messages with nothing to pin/quote
+    if ((!message.content && !message.attachments) || !message.channel.isTextBased()) return // ignores messages with nothing to pin/quote
 
     // get the settings for the guild, then check if the feature is enabled.
     const settings = (await GuildSchema.findOrCreate(message.guild.id)).config?.quotes
@@ -35,22 +35,25 @@ export default class ReactionEvent extends BotEvent {
     if (!message.guild.members.me?.permissionsIn(channelId).has(["SendMessages", "AttachFiles", "EmbedLinks"])) return
 
     if (!message.author) return
+    const content = message.content ?? ""
+    const files = getFiles(message as Message)
     const embed = new EmbedBuilder({
       author: {
         name: message.author.username, 
         icon_url: message.author.avatarURL({size: 128}) ?? undefined,
         url: message.url
       },
-      description: message.content.length > 0 ? message.content : undefined,
+      description: content.length > 0 ? content : undefined,
       footer: {
         text: `Pinned by ${user.username}`,
         icon_url: user.avatarURL({size: 128}) ?? undefined
       },
+      image: files.length == 1 ? { url: files[0].attachment } : undefined,
       timestamp: Date.now(),
       color: Colors.embed_dark,
     })
-    const files = getFiles(message as Message)
+    
     void message.react(reaction.emoji)
-    return void await channel.send({ embeds: [embed], files: files ?? undefined})
+    return void await channel.send({ embeds: [embed], files: files.length > 1 ? files : undefined})
   }
 }
