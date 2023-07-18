@@ -1,8 +1,7 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder, Interaction, codeBlock } from "discord.js";
+import { APIMessageActionRowComponent, ActionRowBuilder, ApplicationCommandOptionType, ButtonStyle, ChatInputCommandInteraction, ComponentType, EmbedBuilder, MessageActionRowComponentBuilder, codeBlock } from "discord.js";
 import Amayi from "../../structures/Amayi";
 import { Command } from "../../structures/Command";
 import { Colors } from "../../config";
-import { formatDuration } from "../../modules/formatTime";
 
 export default class HelpCommand extends Command {
   constructor(client: Amayi) {
@@ -31,20 +30,39 @@ export default class HelpCommand extends Command {
     }
     const ephemeral: boolean = args.visibility == "hidden";
 
-    const avatar = args.user.avatarURL()
+    const user = await this.client.users.fetch(args.user, { force: true })
+    const name = user.globalName ?? `@${args.user.username}`
+    const avatar = user.avatarURL({size: 512})
+    const avatarFull = user.avatarURL({size: 4096})
+    const banner = user.bannerURL({size: 4096})
 
-    const embed = new EmbedBuilder({
-      fields: [
-        {name: "Name", value: codeBlock("sh", args.user.tag), inline: true}, // potentially add badges?
-        // {name: "Pronouns", value: codeBlock("js", "unfi/nished"), inline: true},
-        // {name: "Bio", value: 'coming soon.'}
-      ],
-      color: Colors.embed_dark,
-      thumbnail: avatar ? { url: avatar } : undefined,
-      footer: {text: "Created at"},
-      timestamp: args.user.createdTimestamp
-    })
+    const embed = new EmbedBuilder()
+      .setTitle(name)
+      .setThumbnail(avatar)
+      .setColor(user.accentColor ?? Colors.embed_dark)
+      .setFooter({text: "Created at"})
+      .setTimestamp(user.createdTimestamp)
+      .addFields({name: "Username", value: codeBlock("sh", `@${args.user.username}`)})
 
-    await interaction.reply({ embeds: [embed], ephemeral })
+    let components: APIMessageActionRowComponent[] = []
+    if (avatarFull) {
+      components.push({
+        style: ButtonStyle.Link,
+        label: "Avatar",
+        url: avatarFull,
+        type: ComponentType.Button
+      })
+    }
+    if (banner) {
+      components.push({
+        style: ButtonStyle.Link,
+        label: "Banner",
+        url: banner,
+        type: ComponentType.Button
+      })
+    }
+    const buttons = new ActionRowBuilder<MessageActionRowComponentBuilder>({components})
+
+    await interaction.reply({embeds: [embed], components: components.length > 0 ? [buttons] : undefined, ephemeral})
   }
 }

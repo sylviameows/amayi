@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, ColorResolvable, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import Amayi from "../structures/Amayi";
 import { Command } from "../structures/Command";
 import { Colors, Emotes } from "../config";
@@ -75,7 +75,7 @@ export default class PetitionCommand extends Command {
     
     await interaction.deferReply({ ephemeral: args.anonymous })
 
-    const user = !args.anonymous ? interaction.user : {username: "Anonymous", avatarURL() {return undefined}}
+    const user = !args.anonymous ? interaction.user : {username: "Anonymous", globalName: null, avatarURL() {return undefined}}
     if (args.image && args.image.name.match(/([^\s]+(\.(jpe?g|png|gif)))$/g) == null)
       return void await interaction.editReply({ content: "Invalid file type, I only accept .png, .jpg, and .gif" })   
        
@@ -84,7 +84,7 @@ export default class PetitionCommand extends Command {
       .setDescription(args.content)
       .setColor(args.color)
       .setTimestamp(Date.now())
-      .setFooter({ text: user.username, iconURL: user.avatarURL() ?? undefined})
+      .setFooter({ text: user.globalName ? `${user.globalName} (@${user.username})` : user.username, iconURL: user.avatarURL() ?? undefined})
       .setImage(args.image?.url ?? null)
 
     // create message in set OR current channel.

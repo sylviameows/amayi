@@ -39,13 +39,13 @@ export default class ReactionEvent extends BotEvent {
     const files = getFiles(message as Message)
     const embed = new EmbedBuilder({
       author: {
-        name: message.author.username, 
+        name: user.globalName ? `${user.globalName}` : `${user.username}`, 
         icon_url: message.author.avatarURL({size: 128}) ?? undefined,
         url: message.url
       },
       description: content.length > 0 ? content : undefined,
       footer: {
-        text: `Pinned by ${user.username}`,
+        text: `Pinned by ${user.globalName ? `${user.globalName} (@${user.username})` : `@${user.username}`}`,
         icon_url: user.avatarURL({size: 128}) ?? undefined
       },
       image: files.length == 1 ? { url: files[0].attachment } : undefined,
