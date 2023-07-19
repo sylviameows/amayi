@@ -118,15 +118,14 @@ export default async (client: Amayi) => {
   })
 
   app.get("/logout", (req, res) => {
-    req.session.destroy(() => { 
-      try { // @ts-ignore
-        req.logout()
+    req.logout({}, (err) => {
+      if (err) console.warn("logout error occured: "+err)
+      req.session.destroy(() => { 
+        if (err) console.warn("logout error occured: "+err)
         res.redirect('/')
-      } catch {
-        console.warn("logout error occured")
-        res.redirect('/') //add error handling later
-      }
+      })
     })
+
   })
 
   app.get("/", (req, res) => {
