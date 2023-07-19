@@ -128,6 +128,10 @@ export default async (client: Amayi) => {
     renderTemplate(req, res, "index.ejs");
   })
 
+  app.get("/features", (req, res) => {
+    renderTemplate(req, res, "features.ejs");
+  })
+
   app.get("/dashboard", checkAuth, (req, res) => {
     renderTemplate(req, res, "dashboard.ejs", { perms: PermissionsBitField })
   })

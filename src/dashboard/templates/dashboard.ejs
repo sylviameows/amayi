@@ -1,21 +1,22 @@
 <%- include("partials/header", { bot, user, path, title: "Select server" }) %>
 
-<div style="display: flex; flex-wrap: wrap; justify-content: center;">
+<div class="dashboard">
   <% user.guilds.forEach(guild => {
       const permissions = new perms(BigInt(guild.permissions))
       if (!permissions.has("ManageGuild")) return%>
 
-    <div class="card" style="max-width: 18rem; margin: 2rem; min-width: 10em;">
-    <%- guild.icon ? `<img src="https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}" class="card-img-top" style="max-width: 18rem;">` : "" %>
+    <div class="card">
+    <%- guild.icon ? `<img src="https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}?size=512" class="card-img">` : `<img src="/unknown.png" class="card-img">` %>
       <div class="card-body">
-        <h5 class="card-title"><%= guild.name %></h5>
+        <h2><%= guild.name %></h5>
         <% if (bot.guilds.cache.get(guild.id)) { %>
-          <p class="card-text">Edit <%= guild.name %>'s settings via the dashboard by clicking the button below.</p>
-          <a href="/dashboard/<%- guild.id %>" class="btn btn-primary">Edit Settings</a>
+          <p>Edit <b><%= guild.name %></b>'s settings via the dashboard by clicking the button below.</p>
+          <a style="margin-top: auto;" href="/dashboard/<%- guild.id %>" class="secondary-button">Edit Settings</a>
         <% } else { %>
-          <p class="card-text">Invite the bot to <%= guild.name %> in order to their this server's settings via the dashboard by clicking the button below.</p>
-          <a href="<%= `https://discordapp.com/oauth2/authorize?client_id=${bot.user.id}&scope=bot&guild_id=${guild.id}&response_type=code&redirect_uri=${encodeURIComponent(`${bot.config.dashboard.domain}${bot.config.dashboard.port == 80 ? '' : `:${bot.config.dashboard.port}`}/callback`)}` %>" class="btn btn-secondary">Invite Bot</a>
+          <p>Invite the bot to <%= guild.name %> in order to their this server's settings via the dashboard by clicking the button below.</p>
+          <a style="margin-top: auto;" href="<%= `https://discordapp.com/oauth2/authorize?client_id=${bot.user.id}&scope=bot&guild_id=${guild.id}&response_type=code&redirect_uri=${encodeURIComponent(`${bot.config.dashboard.domain}${bot.config.dashboard.port == 80 ? '' : `:${bot.config.dashboard.port}`}/callback`)}` %>" class="primary-button">Invite Bot</a>
         <% } %>
+        <div class="card-bg"></div>
       </div>
     </div>
   <%
