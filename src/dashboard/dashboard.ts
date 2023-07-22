@@ -8,8 +8,7 @@ import ejs from "ejs"
 import bodyParser from "body-parser"
 import url from "url"
 import GuildSchema from "../models/GuildSchema"
-import { Guild, PermissionsBitField } from "discord.js"
-import { client } from ".."
+import { PermissionsBitField } from "discord.js"
 
 const Strategy = require("passport-discord").Strategy
 const app = express()
@@ -108,10 +107,13 @@ export default async (client: Amayi) => {
   }, passport.authenticate("discord"))
 
   app.get("/callback", passport.authenticate("discord", { failureRedirect: "/" }), (req: any, res: any) => {
-    if (req.session.backURL) {
+    const guildId = req.query.guild_id
+    if (guildId) {
+      res.redirect(`/dashboard/${guildId}`)
+    } else if (req.session.backURL) {
       const url = req.session.backURL;
       req.session.backURL = null;
-      res.redirect(url);
+      res.redirect(url)
     } else {
       res.redirect("/")
     }
@@ -143,7 +145,7 @@ export default async (client: Amayi) => {
   app.get("/dashboard/:guildID", checkAuth, async (req, res) => {
     const guild = client.guilds.cache.get(req.params.guildID)
     if (!guild) return res.redirect("/dashboard") // @ts-ignore
-    const member = guild.members.cache.get(req.user?.id)
+    const member = await guild.members.fetch(req.user?.id)
     if (!member) return res.redirect("/dashboard")
     if (!member.permissions.has("ManageGuild")) return res.redirect("/dashboard")
 

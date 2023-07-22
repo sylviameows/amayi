@@ -347,7 +347,8 @@ input:checked + .slider:before {
 .settings p {
   margin: 0;
 }
-.settings .form-control {
+
+.form-control, .form-select {
   font: 'Inter', sans-serif;
   color: var(--text);
   background-color: var(--secondary);
@@ -360,6 +361,11 @@ input:checked + .slider:before {
   border: var(--secondary);
   border-radius: 6px;
   padding: 0.5em;
+}
+
+.form-choice {
+  outline: none;
+  border: 1px solid var(--primary);
 }
 
 .setting {
