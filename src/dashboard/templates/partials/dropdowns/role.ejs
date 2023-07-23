@@ -1,0 +1,14 @@
+
+
+<select class="form-select" name="<%= setting %>" id="<%= setting %>">
+  <option class="form-choice" value="" ></option>
+  <% guild.roles.cache.forEach(channel => { %>
+    <% let valid = true %>
+    <% if (false == true) { valid = false } %>
+    <option class="form-choice" value="<%= channel.id %>" 
+      <% if (settingValue === channel.id) { %> selected <% }%> 
+      <% if (!valid) { %> disabled <% }%>>
+      @<%= channel.name %>
+    </option>
+  <% }) %>
+</select>

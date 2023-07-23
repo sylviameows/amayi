@@ -1,0 +1,16 @@
+
+
+<select class="form-select" name="<%= setting %>" id="<%= setting %>">
+  <option class="form-choice" value="" ></option>
+  <% guild.channels.cache.forEach(channel => { %>
+    <% let valid = true %>
+    <% if (channel.isTextBased() && !channel.isVoiceBased()) { %>
+      <% if (!channel.permissionsFor(guild.members.me).has(["SendMessages", "AddReactions", "ViewChannel"])) { valid = false } %>
+      <option class="form-choice" value="<%= channel.id %>" 
+        <% if (settingValue === channel.id) { %> selected <% }%> 
+        <% if (!valid) { %> disabled <% }%>>
+        #<%= channel.name %>
+      </option>
+    <% } %>
+  <% }) %>
+</select>
