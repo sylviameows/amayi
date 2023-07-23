@@ -39,7 +39,7 @@ export default class ReactionEvent extends BotEvent {
     const files = getFiles(message as Message)
     const embed = new EmbedBuilder({
       author: {
-        name: user.globalName ? `${user.globalName}` : `${user.username}`, 
+        name: message.author.globalName ? `${message.author.globalName}` : `${message.author.username}`, 
         icon_url: message.author.avatarURL({size: 128}) ?? undefined,
         url: message.url
       },
