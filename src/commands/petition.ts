@@ -81,7 +81,7 @@ export default class PetitionCommand extends Command {
        
     const embed = new EmbedBuilder()
       .setTitle(args.title)
-      .setDescription(args.content)
+      .setDescription(args.content.replace('\\n', '\n'))
       .setColor(args.color)
       .setTimestamp(Date.now())
       .setFooter({ text: user.globalName ? `${user.globalName} (@${user.username})` : user.username, iconURL: user.avatarURL() ?? undefined})
