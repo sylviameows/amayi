@@ -55,12 +55,12 @@ export default class ReactionEvent extends BotEvent {
         text: `Pinned by ${user.globalName ? `${user.globalName} (@${user.username})` : `@${user.username}`}`,
         icon_url: user.avatarURL({size: 128}) ?? undefined
       },
-      image: files.length == 1 ? { url: files[0].attachment } : undefined,
+      image: (files.length == 1 && files[0].embed) ? { url: files[0].attachment } : undefined,
       timestamp: Date.now(),
       color: Colors.embed_dark,
     })
     
     void message.react(reaction.emoji)
-    return void await channel.send({ embeds: [embed], files: files.length > 1 ? files : undefined})
+    return void await channel.send({ embeds: [embed], files: files.length > 1 || !files[0].embed ? files : undefined})
   }
 }
