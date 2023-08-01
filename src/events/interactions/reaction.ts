@@ -35,8 +35,15 @@ export default class ReactionEvent extends BotEvent {
     if (!message.guild.members.me?.permissionsIn(channelId).has(["SendMessages", "AttachFiles", "EmbedLinks"])) return
 
     if (!message.author) return
-    const content = message.content ?? ""
+    let content = message.content ?? ""
     const files = getFiles(message as Message)
+
+    const reference = message.reference
+    if (reference?.messageId) {
+      const repliedTo = await message.channel.messages.fetch(reference.messageId)
+      content = `> Replying to <@${repliedTo.author.id}>: ${repliedTo.content}\n${content}`
+    }
+
     const embed = new EmbedBuilder({
       author: {
         name: message.author.globalName ? `${message.author.globalName}` : `${message.author.username}`, 
