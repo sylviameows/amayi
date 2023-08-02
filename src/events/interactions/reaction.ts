@@ -61,6 +61,6 @@ export default class ReactionEvent extends BotEvent {
     })
     
     void message.react(reaction.emoji)
-    return void await channel.send({ embeds: [embed], files: files.length > 1 || !files[0].embed ? files : undefined})
+    return void await channel.send({ embeds: [embed], files: files.length > 1 || !files[0]?.embed ? files : undefined})
   }
 }
