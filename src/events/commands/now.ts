@@ -39,6 +39,6 @@ export default class NowCommand extends ChatCommandEvent {
     })
 
     const timestamp = Math.floor(now.getTime()/1000)
-    await message.reply(content+`You: <t:${timestamp}:T>`)
+    await message.reply({content: content+`You: <t:${timestamp}:T>`, allowedMentions: {parse: []}})
   }
 }
