@@ -14,7 +14,7 @@ const aliases = {
 
 export default class NowCommand extends ChatCommandEvent {
   constructor (client: Amayi) {
-    super(client, "now")
+    super(client, "now", ["n"])
   }
 
   async runCommand(message: Message<boolean>, args: string[]): Promise<void> {
