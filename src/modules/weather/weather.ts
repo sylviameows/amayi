@@ -24,7 +24,8 @@ export default async function weather(
   return await message.reply({ 
     content: `It is currently \`${data.current.temp_f}°F\` (\`${data.current.temp_c}°C\`) in ${string}`, 
     embeds: [createTemperatureEmbed(data, string)], // @ts-ignore
-    components: alertsData.length > 0 ? [selectionRow, alertRow] : [selectionRow]
+    components: alertsData.length > 0 ? [selectionRow, alertRow] : [selectionRow],
+    allowedMentions: {parse: []}
   })
 }
 
