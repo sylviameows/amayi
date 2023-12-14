@@ -17,7 +17,7 @@ export default class HelpCommand extends ChatCommandEvent {
     const command = (command: string) => { return `\`${prefix}${command}\`` }
 
     await message.reply({content: [
-      "### amayi legacy commands",
+      "### amayi chat commands",
       command("help")+" shows this message.",
       command("now (...timezones)")+" get the time.",
       command("use <macro>")+" use a macro.",
