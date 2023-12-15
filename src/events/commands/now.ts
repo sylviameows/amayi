@@ -10,6 +10,7 @@ const aliases = {
   res: {display: "Restitutor", tz: "America/Toronto"},
   primis: {display: "Primis", tz: "America/Chicago"},
   clixy: {display: "Clixy", tz: "America/Los_Angeles"},
+  ari: {display: "Ari", tz: "Asia/Calcutta"}
 }
 
 export default class NowCommand extends ChatCommandEvent {
