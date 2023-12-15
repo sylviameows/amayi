@@ -19,7 +19,7 @@ export default class HelpCommand extends ChatCommandEvent {
     await message.reply({content: [
       "### amayi chat commands",
       command("help")+" shows this message.",
-      command("now (...timezones)")+" get the time.",
+      command("now (...timezones) (-f)")+" get the time.",
       command("use <macro>")+" use a macro.",
       command("weather <location>")+ " wouldn't u like to know *weather boy*.",
       "",
