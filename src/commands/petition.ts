@@ -76,8 +76,8 @@ export default class PetitionCommand extends Command {
     await interaction.deferReply({ ephemeral: args.anonymous })
 
     const user = !args.anonymous ? interaction.user : {username: "Anonymous", globalName: null, avatarURL() {return undefined}}
-    if (args.image && args.image.name.match(/([^\s]+(\.(jpe?g|png|gif)))$/g) == null)
-      return void await interaction.editReply({ content: "Invalid file type, I only accept .png, .jpg, and .gif" })   
+    if (args.image && args.image.name.match(/([^\s]+(\.(jpe?g|png|webp|gif)))$/g) == null)
+      return void await interaction.editReply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif" })   
        
     const embed = new EmbedBuilder()
       .setTitle(args.title)
