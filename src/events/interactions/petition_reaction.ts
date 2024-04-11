@@ -32,11 +32,14 @@ export default class PetitionReactionEvent extends BotEvent {
     if (!upvote || !downvote) return; // we need BOTH
 
     if (upvote.count <= 2 && downvote.count <= 2) return; 
+
+    const id = this.client.user?.id
+    if (!id) return
     if (upvote.me) {
-      upvote.remove()
+      upvote.users.remove(id)
     }
     if (downvote.me) {
-      downvote.remove()
+      downvote.users.remove(id)
     }
   }
 }
