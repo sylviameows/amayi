@@ -5,7 +5,7 @@ import GuildSchema from "../../models/GuildSchema";
 import { Colors } from "../../config";
 import { getFiles } from "../../modules/getFiles";
 
-export default class ReactionEvent extends BotEvent {
+export default class QuoteReactionEvent extends BotEvent {
   constructor(client: Amayi) {
     super(client, {
       name: "messageReactionAdd"
