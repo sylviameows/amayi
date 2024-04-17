@@ -72,13 +72,18 @@ export default class PetitionCommand extends Command {
     const settings = (await GuildSchema.findOrCreate(interaction.guild.id)).config?.petitions
     if (!settings || !settings.enabled) return void await interaction.reply({ content: "Petitions are not enabled on this server!", ephemeral: true })
     
-    
-    await interaction.deferReply({ ephemeral: args.anonymous })
-
     const user = !args.anonymous ? interaction.user : {username: "Anonymous", globalName: null, avatarURL() {return undefined}}
     if (args.image && args.image.name.match(/([^\s]+(\.(jpe?g|png|webp|gif)))$/g) == null)
-      return void await interaction.editReply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif" })   
-       
+      return void await interaction.reply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif", ephemeral: true })   
+  
+    const content = settings.role ? `<@&${settings.role}>` : ""
+    if (settings.channel_id != interaction.channelId) {
+      // honestly idk if this is actually needed, but i'll keep it to be safe !
+      await interaction.deferReply({ ephemeral: args.anonymous })
+    } else {
+      await interaction.reply({ content, allowedMentions: { roles: settings.role ? [settings.role] : undefined }})
+    }
+
     const embed = new EmbedBuilder()
       .setTitle(args.title)
       .setDescription(args.content.replaceAll('\\n', '\n'))
@@ -88,7 +93,6 @@ export default class PetitionCommand extends Command {
       .setImage(args.image?.url ?? null)
 
     // create message in set OR current channel.
-    const content = settings.role ? `<@&${settings.role}>` : ""
     let message = undefined
     if (settings.channel_id && settings.channel_id != interaction.channelId) {
       const channel = await interaction.guild.channels.fetch(settings.channel_id)
