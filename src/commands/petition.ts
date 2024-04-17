@@ -98,16 +98,16 @@ export default class PetitionCommand extends Command {
       const channel = await interaction.guild.channels.fetch(settings.channel_id)
       if (!channel || !channel.isTextBased()) return void await interaction.editReply("Could not find a text channel.")
       if (!interaction.guild.members.me?.permissionsIn(channel).has(["SendMessages", "AttachFiles"])) return void await interaction.editReply(`I do not have the permissions \`SendMessages\` and \`AttachFiles\` in <#${channel.id}>`)
-      message = await channel.send({ content, embeds: [embed] })
+      message = await channel.send({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
       await interaction.editReply(`Successfully sent petition${args.anonymous ? " anonymously " : " "}in <#${channel.id}>`)
     } else if (args.anonymous) {
       // this section of code is needed since anonymous petitions must be sent in a separate message.
       const channel = settings.channel_id ? await interaction.guild.channels.fetch(settings.channel_id) : interaction.channel
       if (!channel || !channel.isTextBased()) return void await interaction.editReply("Could not find a text channel.")
-      message = await channel.send({ content, embeds: [embed] })
+      message = await channel.send({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
       await interaction.editReply(`Successfully sent petition anonymously in <#${channel.id}>`)
     } else {
-      message = await interaction.editReply({ content, embeds: [embed] })
+      message = await interaction.editReply({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
     }
     
     // react to the message
