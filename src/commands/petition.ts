@@ -77,7 +77,7 @@ export default class PetitionCommand extends Command {
       return void await interaction.reply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif", ephemeral: true })   
   
     const content = settings.role ? `<@&${settings.role}>` : ""
-    if (settings.channel_id != interaction.channelId) {
+    if (settings.channel_id != interaction.channelId || args.anonymous) {
       // honestly idk if this is actually needed, but i'll keep it to be safe !
       await interaction.deferReply({ ephemeral: args.anonymous })
     } else {
