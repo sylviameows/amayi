@@ -18,35 +18,39 @@ const NUMBERS = [
 ];
 
 export default class PetitionCommand extends Command {
-  constructor(client: Amayi) {
+  constructor(client: Amayi, name: string = "petition") {
+    const title = name.replace(
+      /\w\S*/g, 
+      (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+    )
     super(client, {
-      name: "petition",
-      description: "Create a petition.",
+      name: name,
+      description: `Create a ${name}.`,
       options: [
         { 
           name: "content", 
-          description: "What is your petition about?", 
+          description: `What is your ${name} about?`, 
           type: ApplicationCommandOptionType.String,
           required: true,
           max_length: 4096
         },{
           name: "choices",
-          description: "For petitions where you choose between 2-10 options, leave empty for simple yes/no.",
+          description: `For ${name}s where you choose between 2-10 options, leave empty for simple yes/no.`,
           type: ApplicationCommandOptionType.Integer,
           max_value: 10,
           min_value: 2,
         },{
           name: "title",
-          description: "The title of the petition, defaults to 'Petition'",
+          description: `The title of the ${name}, defaults to "${title}"`,
           type: ApplicationCommandOptionType.String,
           max_length: 256
         },{
           name: "image",
-          description: "An image to attach to your petition.",
+          description: `An image to attach to your ${name}.`,
           type: ApplicationCommandOptionType.Attachment
         },{
           name: "color",
-          description: "Select a color to use for the petition",
+          description: `Select a color to use for the ${name}.`,
           type: ApplicationCommandOptionType.Number,
           choices: Object.entries(Colors).map(v => {return {name: v[0].replaceAll('_', ' '), value: v[1]}})
         },{
@@ -56,21 +60,31 @@ export default class PetitionCommand extends Command {
         }
       ]
     })
+    this.name = name;
+  }
+
+  // command name for differenciating
+  name: string;
+  private toTitleCase(str:string) {
+    return str.replace(
+      /\w\S*/g, 
+      (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+    )
   }
 
   async run(interaction: ChatInputCommandInteraction): Promise<void> {
     const args = {
       content: interaction.options.getString("content", true),
-      title: interaction.options.getString("title") ?? "Petition",
+      title: interaction.options.getString("title") ?? this.toTitleCase(this.name),
       choices: interaction.options.getInteger("choices") ?? null,
       image: interaction.options.getAttachment("image") ?? null,
       color: interaction.options.getNumber("color") ?? Colors.embed_dark,
       anonymous: interaction.options.getBoolean("anonymous") ?? false,
     }
 
-    if (!interaction.guild) return void await interaction.reply({ content: "You can only make petitions in servers!", ephemeral: true})
+    if (!interaction.guild) return void await interaction.reply({ content: `You can only make ${this.name}s in servers!`, ephemeral: true})
     const settings = (await GuildSchema.findOrCreate(interaction.guild.id)).config?.petitions
-    if (!settings || !settings.enabled) return void await interaction.reply({ content: "Petitions are not enabled on this server!", ephemeral: true })
+    if (!settings || !settings.enabled) return void await interaction.reply({ content: `${this.toTitleCase(this.name)}s are not enabled on this server!`, ephemeral: true })
     
     const user = !args.anonymous ? interaction.user : {username: "Anonymous", globalName: null, avatarURL() {return undefined}}
     if (args.image && args.image.name.match(/([^\s]+(\.(jpe?g|png|webp|gif)))$/g) == null)
@@ -99,13 +113,13 @@ export default class PetitionCommand extends Command {
       if (!channel || !channel.isTextBased()) return void await interaction.editReply("Could not find a text channel.")
       if (!interaction.guild.members.me?.permissionsIn(channel).has(["SendMessages", "AttachFiles"])) return void await interaction.editReply(`I do not have the permissions \`SendMessages\` and \`AttachFiles\` in <#${channel.id}>`)
       message = await channel.send({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
-      await interaction.editReply(`Successfully sent petition${args.anonymous ? " anonymously " : " "}in <#${channel.id}>`)
+      await interaction.editReply(`Successfully sent ${this.name}${args.anonymous ? " anonymously " : " "}in <#${channel.id}>`)
     } else if (args.anonymous) {
       // this section of code is needed since anonymous petitions must be sent in a separate message.
       const channel = settings.channel_id ? await interaction.guild.channels.fetch(settings.channel_id) : interaction.channel
       if (!channel || !channel.isTextBased()) return void await interaction.editReply("Could not find a text channel.")
       message = await channel.send({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
-      await interaction.editReply(`Successfully sent petition anonymously in <#${channel.id}>`)
+      await interaction.editReply(`Successfully sent ${this.name} anonymously in <#${channel.id}>`)
     } else {
       message = await interaction.editReply({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
     }
