@@ -35,8 +35,15 @@ export default class QuoteReactionEvent extends BotEvent {
     if (!message.guild.members.me?.permissionsIn(channelId).has(["SendMessages", "AttachFiles", "EmbedLinks"])) return
 
     if (!message.author) return
+
+    // make bot not able to pin quote messages (experimental)
+    if (message.author.id == this.client.user?.id && channel.id == channelId) return
+
     let content = message.content ?? ""
     const files = getFiles(message as Message)
+
+    // make bot not able to quote content with nothing. (eg. bot embeds.)
+    if (content == "" && files.length == 0) return
 
     const reference = message.reference
     if (reference?.messageId) {
