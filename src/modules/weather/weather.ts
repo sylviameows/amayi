@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Message } from "discord.js";
+import { ActionRowBuilder, bold, Message } from "discord.js";
 import { client } from "../..";
 import { createTemperatureEmbed } from "./embeds";
 import { alerts, select } from "./buttons";
@@ -9,7 +9,8 @@ export default async function weather(
 ): Promise<any> {
   const data: WeatherData | void = await getWeatherData(location);
   if (!data) return;
-  if (data.error) return await message.reply(data.error.message);
+
+  if (data.error) return await message.reply(bold("! ") + data.error.message);
 
   const alertsData = data.alerts.alert
   const string = getLocationString(data)
@@ -46,7 +47,7 @@ export async function getWeatherData(location: string): Promise<WeatherData | vo
   if (!data || diff(data.lastCall) > 180000) {
     const res = await fetch(URI("forecast", location, [{key: "alerts", value: "yes"}]), {method: "GET"})
     const filtered = await res.json().then(json => filterAlerts(json as WeatherData))
-    cache.set(getLocationString(filtered), {data: filtered, lastCall: Date.now()});
+    cache.set(filtered.error ? location : getLocationString(filtered), {data: filtered, lastCall: Date.now()});
     return filtered;
   }
   return data.data;
@@ -74,6 +75,7 @@ function filterAlerts(data: WeatherData): WeatherData {
 }
 
 export function getLocationString(data: WeatherData): string {
+  console.log(data)
   let string = `${data.location.name}, ${data.location.country}`;
   if (
     data.location.country == "United States of America" ||
