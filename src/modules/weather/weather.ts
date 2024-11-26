@@ -75,7 +75,6 @@ function filterAlerts(data: WeatherData): WeatherData {
 }
 
 export function getLocationString(data: WeatherData): string {
-  console.log(data)
   let string = `${data.location.name}, ${data.location.country}`;
   if (
     data.location.country == "United States of America" ||
