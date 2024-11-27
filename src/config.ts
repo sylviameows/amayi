@@ -1,8 +1,8 @@
 import Uwuifier from "uwuifier";
 
 export const Dashboard = {
-  domain: "http://apollo.arcator.co.uk",
-  port: 8888,
+  domain: "http://localhost",
+  port: 8080,
   custom: false // is this a custom domain?
 }
 

@@ -1,6 +1,9 @@
 import { GatewayIntentBits, Partials } from "discord.js"
 import Amayi from "./structures/Amayi";
 
+const { generateDependencyReport } = require('@discordjs/voice');
+console.log(generateDependencyReport());
+
 export const client = new Amayi({
   intents: [
     GatewayIntentBits.Guilds,
@@ -9,6 +12,7 @@ export const client = new Amayi({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildVoiceStates
   ],
   partials: [
     Partials.Channel,
