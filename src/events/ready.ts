@@ -21,7 +21,7 @@ export default class InitializeEvent extends BotEvent {
     }
     console.log("Fetched members.")
 
-    console.log("Successfully deployed commands and logged in as "+this.client.user?.tag ?? "an unknown user.")
+    console.log("Successfully deployed commands and logged in as "+(this.client.user?.tag ?? "an unknown user."))
     dashboard(this.client)
   }
 }
