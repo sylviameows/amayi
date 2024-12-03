@@ -117,7 +117,7 @@ export default class PetitionCommand extends Command {
     } else if (args.anonymous) {
       // this section of code is needed since anonymous petitions must be sent in a separate message.
       const channel = settings.channel_id ? await interaction.guild.channels.fetch(settings.channel_id) : interaction.channel
-      if (!channel || !channel.isTextBased()) return void await interaction.editReply("Could not find a text channel.")
+      if (!channel || !channel.isTextBased() || channel.isDMBased()) return void await interaction.editReply("Could not find a text channel.")
       message = await channel.send({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
       await interaction.editReply(`Successfully sent ${this.name} anonymously in <#${channel.id}>`)
     } else {

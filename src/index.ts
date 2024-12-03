@@ -1,8 +1,8 @@
 import { GatewayIntentBits, Partials } from "discord.js"
 import Amayi from "./structures/Amayi";
 
-const { generateDependencyReport } = require('@discordjs/voice');
-console.log(generateDependencyReport());
+// const { generateDependencyReport } = require('@discordjs/voice');
+// console.log(generateDependencyReport());
 
 export const client = new Amayi({
   intents: [

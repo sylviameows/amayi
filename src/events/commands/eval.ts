@@ -12,11 +12,23 @@ export default class EvalCommand extends ChatCommandEvent {
       try {
         const response = await eval(args.join(' '))
         return void await message.reply({content: codeBlock('js', response)})
-          .catch(async () => await message.channel.send("Error occured trying to send feedback."))
+          .catch(async () => {
+            var channel = message.channel;
+            if (!channel || !channel.isTextBased() || channel.isDMBased()) return;
+            await channel.send("Error occured trying to send feedback.")
+          })
       } catch (err) {
-        if (!(err instanceof Error)) return void await message.reply({content: "Unknown error occured."}).catch(async () => await message.channel.send("Unknown error occured trying to send feedback."))
+        if (!(err instanceof Error)) return void await message.reply({content: "Unknown error occured."}).catch(async () => {
+          var channel = message.channel;
+          if (!channel || !channel.isTextBased() || channel.isDMBased()) return;
+          await channel.send("Unknown error occured trying to send feedback.")
+        })
         return void await message.reply({content: `An error occured: \`${err.name}: ${err.message}\`` + err.stack ? codeBlock('js', err.stack ?? "Could not fetch stacktrace.") : ''})
-          .catch(async () => await message.channel.send("Error occured trying to send feedback."))
+          .catch(async () => {
+            var channel = message.channel;
+            if (!channel || !channel.isTextBased() || channel.isDMBased()) return;
+            await channel.send("Error occured trying to send feedback.")
+          })
       }
     }
   }

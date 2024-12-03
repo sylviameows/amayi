@@ -32,6 +32,7 @@ export default class QuoteReactionEvent extends BotEvent {
     if (!channelId) return
     const channel = await this.client.channels.fetch(channelId)
     if (!channel || !channel.isTextBased()) return
+    if (channel.isDMBased()) return;
     if (!message.guild.members.me?.permissionsIn(channelId).has(["SendMessages", "AttachFiles", "EmbedLinks"])) return
 
     if (!message.author) return
