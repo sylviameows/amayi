@@ -48,8 +48,12 @@ export default class QuoteReactionEvent extends BotEvent {
 
     const reference = message.reference
     if (reference?.messageId) {
+      try {
       const repliedTo = await message.channel.messages.fetch(reference.messageId)
       content = `> Replying to <@${repliedTo.author.id}>: ${repliedTo.content}\n${content}`
+      } catch {
+      content = `> *Original reply was deleted* \n${content}`
+      }
     }
 
     const embed = new EmbedBuilder({
