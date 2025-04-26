@@ -1,6 +1,7 @@
 import { Message, time } from "discord.js";
 import Amayi from "../../structures/Amayi";
 import ChatCommandEvent from "../../structures/ChatCommandEvent";
+import timezones from "../../modules/timezones/timezones";
 
 const aliases = {
   vae: {display: "Vae", tz: "America/Chicago"},
@@ -19,33 +20,68 @@ export default class NowCommand extends ChatCommandEvent {
     super(client, "now", ["n"])
   }
 
+  EXPRESSION = /(?<=<@)\d+(?=>)/g
+
   async runCommand(message: Message<boolean>, args: string[]): Promise<void> {
     const now = new Date();
-    let content: string = "";
 
     let full = false
     if (args.includes("-f")) full = true;
 
-    args.forEach(arg => {
-      const alias = arg as keyof typeof aliases;
-      let data: { display?: string, tz: string } = aliases[alias];
-
+    const value = await Promise.all(args.map(async arg => {
       if (arg == "-f") return;
+
+      let data: { display?: string, tz: string }
+      if (arg == "me") {
+        const tz = await timezones.fromId(message.author.id);
+        const name = message.author.globalName ?? message.author.displayName
+
+        if (!tz) return `**!** You dont have a valid timezone set.`
+        
+        data = {display: name, tz};
+      } else {
+        // @ts-ignore
+        if (aliases[arg]) {
+          data = aliases[arg as keyof typeof aliases];
+        } else {
+          const result = this.EXPRESSION.exec(arg);
+          if (result?.[0]) {
+            const tz = await timezones.fromId(result[0])
+            if (!tz) {
+              return `**!** ${arg} does not have a valid timezone set.`
+            }
+
+            let name = await timezones.aliasFromUserId(result[0])
+            if (!name) name = `<@${result[0]}>`
+            
+
+            data = {display: name, tz};
+          } else {
+            const tz = await timezones.fromAlias(arg)
+
+            if (!tz) {
+              return `**!** \`${arg}\` does not have a valid timezone set.`
+            }
+            
+            data = {display: arg, tz};
+          }
+        }
+      }
+
       if (!data) data = { tz: arg };
 
       try {
         const time = now.toLocaleTimeString("en-US", {hour12: true, timeStyle: "long", timeZone: data.tz})
         const date = now.toLocaleDateString("en-US", {hour12: true, dateStyle: "full", timeZone: data.tz})
-        const string = `${data.display ?? data.tz}: \`${full ? date+" "+time : time}\` (${data.tz})`
-        content = content+string+'\n';
+        return `${data.display ?? data.tz}: \`${full ? date+" "+time : time}\` (${data.tz})`
       } catch {
-        content = content+`**!** \`${data.display ?? data.tz}\` was not a valid timezone.`+'\n'
+        return `**!** \`${data.display ?? data.tz}\` was not a valid timezone.`
       }
-      
-      
-    })
+    }))
+
+    const content = value.join('\n')
 
     const timestamp = Math.floor(now.getTime()/1000)
-    await message.reply({content: content+`You: <t:${timestamp}${full ? ":F" : ":T"}>`, allowedMentions: {parse: []}})
+    await message.reply({content: content+`\nYou: <t:${timestamp}${full ? ":F" : ":T"}>`, allowedMentions: {parse: []}})
   }
 }
