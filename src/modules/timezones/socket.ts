@@ -1,7 +1,31 @@
 import * as net from 'net';
 import * as crypto from 'crypto';
+import { Snowflake } from 'discord.js';
 
-import type { TimezoneRequest, TimezoneResponse } from './timezones'
+export interface TimezoneResponse {
+  code: number,
+  message: string,
+}
+
+export interface TimezoneRequest {
+  requestType: RequestType,
+  data: AliasData | UserData
+}
+
+interface AliasData {
+  alias: string
+}
+
+interface UserData {
+  userId: Snowflake
+}
+
+export enum RequestType {
+  TIMEZONE_FROM_ALIAS = "RequestType.TIMEZONE_FROM_ALIAS_REQUEST",
+  TIMEZONE = "RequestType.TIMEZONE_REQUEST",
+  ALIAS = "RequestType.ALIAS_REQUEST",
+  USER_FROM_ALIAS = "RequestType.USER_FROM_ALIAS_REQUEST"
+}
 
 function encrypt(text: string, key: string): Buffer {
     const iv = crypto.randomBytes(16);
