@@ -9,6 +9,8 @@ export default {
         userId
       }
     })
+
+    if (response.code == 404) return null;
     return response.message
   },
 
@@ -19,6 +21,8 @@ export default {
         userId
       }
     })
+
+    if (response.code == 404) return null;
     return response.message
   },
 
@@ -29,6 +33,8 @@ export default {
         alias
       }
     })
+
+    if (response.code == 404) return null;
     return response.message
   },
 
@@ -39,6 +45,8 @@ export default {
         alias
       }
     })
+
+    if (response.code == 404) return null;
     return response.message
   }
 }

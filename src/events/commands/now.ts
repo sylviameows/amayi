@@ -20,8 +20,6 @@ export default class NowCommand extends ChatCommandEvent {
     super(client, "now", ["n"])
   }
 
-  EXPRESSION = /(?<=<@)\d+(?=>)/g
-
   async runCommand(message: Message<boolean>, args: string[]): Promise<void> {
     const now = new Date();
 
@@ -44,15 +42,15 @@ export default class NowCommand extends ChatCommandEvent {
         if (aliases[arg]) {
           data = aliases[arg as keyof typeof aliases];
         } else {
-          const result = this.EXPRESSION.exec(arg);
-          if (result?.[0]) {
-            const tz = await timezones.fromId(result[0])
+          if (arg.startsWith("<@")) {
+            const id = arg.slice(2, arg.length - 1)
+            const tz = await timezones.fromId(id)
             if (!tz) {
               return `**!** ${arg} does not have a valid timezone set.`
             }
 
-            let name = await timezones.aliasFromUserId(result[0])
-            if (!name) name = `<@${result[0]}>`
+            let name = await timezones.aliasFromUserId(id)
+            if (!name) name = `<@${id}>`
             
 
             data = {display: name, tz};
@@ -60,7 +58,7 @@ export default class NowCommand extends ChatCommandEvent {
             const tz = await timezones.fromAlias(arg)
 
             if (!tz) {
-              return `**!** \`${arg}\` does not have a valid timezone set.`
+              return `**!** ${arg} does not have a valid timezone set.`
             }
             
             data = {display: arg, tz};
@@ -79,7 +77,7 @@ export default class NowCommand extends ChatCommandEvent {
       }
     }))
 
-    const content = value.join('\n')
+    const content = value.filter(i => i != undefined).join('\n')
 
     const timestamp = Math.floor(now.getTime()/1000)
     await message.reply({content: content+`\nYou: <t:${timestamp}${full ? ":F" : ":T"}>`, allowedMentions: {parse: []}})

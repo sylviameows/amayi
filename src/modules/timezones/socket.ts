@@ -57,14 +57,17 @@ function decrypt(encodedData: Buffer, key: string): string {
 export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
   return new Promise((resolve, reject) => {
     const key = process.env.TIMEZONE_API_KEY;
-    if (!key) throw new Error("Timezone API key is not present!");
+    const host = process.env.TIMEZONE_API_HOST;
+    const port = process.env.TIMEZONE_API_PORT;
+    if (!key || !host || !port) throw new Error("Timezone API is missing .env variables!");
 
     const encryptedMessage = encrypt(JSON.stringify(message), key);
 
-    const client = net.createConnection({ host: 'apollo.arcator.co.uk', port: 8888 });
+    const client = net.createConnection({ host: host, port: Number.parseInt(port) });
 
     client.on("data", (data: Buffer) => {
       const response = JSON.parse(decrypt(data, key));
+      console.log(response)
       resolve(response as TimezoneResponse);
       client.end();
     });
@@ -75,7 +78,8 @@ export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
 
     client.on('error', (err: Error) => {
       console.error('Error:', err.message);
-      reject(err);
+      resolve({code: 404, message:"Not Found"})
+      client.end()
     });
   });
 };
