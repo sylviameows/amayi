@@ -57,16 +57,14 @@ export default class NowCommand extends ChatCommandEvent {
           } else {
             const tz = await timezones.fromAlias(arg)
 
-            if (!tz) {
-              return `**!** ${arg} does not have a valid timezone set.`
+            if (tz) {
+              data = {display: arg, tz};
+            } else {
+              data = {tz: arg}
             }
-            
-            data = {display: arg, tz};
           }
         }
       }
-
-      if (!data) data = { tz: arg };
 
       try {
         const time = now.toLocaleTimeString("en-US", {hour12: true, timeStyle: "long", timeZone: data.tz})
