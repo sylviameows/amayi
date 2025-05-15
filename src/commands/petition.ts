@@ -56,12 +56,16 @@ export default class PetitionCommand extends Command {
           type: ApplicationCommandOptionType.Number,
           choices: Object.entries(Colors).map(v => {return {name: v[0].replaceAll('_', ' '), value: v[1]}})
         },{
-          name: "anonymous", 
+          name: "anonymous_author", 
           description: "set to true if you don't want people seeing who created it.", 
           type: ApplicationCommandOptionType.Boolean,
         },{
-          name: "anonymousresponse", 
+          name: "anonymous_response", 
           description: "set to true if you want responses to be anonymous.", 
+          type: ApplicationCommandOptionType.Boolean,
+        },{
+          name: "only_one", 
+          description: "set to true if you only want to allow one response.",
           type: ApplicationCommandOptionType.Boolean,
         }
       ]
@@ -85,8 +89,9 @@ export default class PetitionCommand extends Command {
       choices: interaction.options.getInteger("choices") ?? null,
       image: interaction.options.getAttachment("image") ?? null,
       color: interaction.options.getNumber("color") ?? Colors.embed_dark,
-      anonymous: interaction.options.getBoolean("anonymous") ?? false,
-      anonymousresponse: interaction.options.getBoolean("anonymousresponse") ?? false,
+      anonymous: interaction.options.getBoolean("anonymous_author") ?? false,
+      anonymous_response: interaction.options.getBoolean("anonymous_response") ?? false,
+      only_one: interaction.options.getBoolean("only_one") ?? false,
     }
 
     if (!interaction.guild) return void await interaction.reply({ content: `You can only make ${this.name}s in servers!`, ephemeral: true})
@@ -98,6 +103,7 @@ export default class PetitionCommand extends Command {
       return void await interaction.reply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif", ephemeral: true })   
   
     const content = settings.role ? `<@&${settings.role}>` : ""
+
     if (settings.channel_id != interaction.channelId || args.anonymous) {
       // honestly idk if this is actually needed, but i'll keep it to be safe !
       await interaction.deferReply({ ephemeral: args.anonymous })
@@ -132,13 +138,13 @@ export default class PetitionCommand extends Command {
     }
     
     // react to the message or add buttons
-    if (!args.anonymousresponse) {
+    if (!args.anonymous_response) {
       if (args.choices) {
         for (let i = 0; i < args.choices; i++)
           await message.react(NUMBERS[i])
       } else {
-        await message.react(Emotes.upvote)
-        await message.react(Emotes.downvote)
+        await message.react(`<:${Emotes.upvote}>`)
+        await message.react(`<:${Emotes.downvote}>`)
       }
     } else {
       // Initialize votes map for database
@@ -187,14 +193,19 @@ export default class PetitionCommand extends Command {
       // Save poll data to MongoDB
       const poll = await AnonymousPollSchema.create({ 
         message_id: message.id,
-        guild_id: interaction.guild.id,
         channel_id: message.channel.id,
         votes: votes
       })
-      await poll.save();
 
       // Update the message with buttons and modified embed
-      await message.edit({ components: rows, embeds: [embed, getEmbed(votes)] });
+      try {
+        await message.edit({ components: rows, embeds: [embed, getEmbed(votes, args.only_one)] });
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+      // Save only if succeeded
+      await poll.save();
     }
   }
 }

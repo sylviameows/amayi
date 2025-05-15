@@ -24,7 +24,6 @@ export default class ButtonEvent extends BotEvent {
         return await pagination.run(interaction);
     }
     else if (interaction.isButton() && interaction.customId.startsWith("anon_poll")) {
-      console.log(`clicked ${interaction.customId}!`);
       return await onClick(interaction);
     }
 
