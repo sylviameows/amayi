@@ -32,7 +32,7 @@ export default class PetitionCommand extends Command {
           description: `What is your ${name} about?`, 
           type: ApplicationCommandOptionType.String,
           required: true,
-          max_length: 4096
+          max_length: 1000,
         },{
           name: "choices",
           description: `For ${name}s where you choose between 2-10 options, leave empty for simple yes/no.`,
@@ -57,6 +57,10 @@ export default class PetitionCommand extends Command {
           name: "anonymous", 
           description: "set to true if you don't want people seeing who created it.", 
           type: ApplicationCommandOptionType.Boolean,
+        },{
+          name: "anonymousresponse", 
+          description: "set to true if you want responses to be anonymous.", 
+          type: ApplicationCommandOptionType.Boolean,
         }
       ]
     })
@@ -80,6 +84,7 @@ export default class PetitionCommand extends Command {
       image: interaction.options.getAttachment("image") ?? null,
       color: interaction.options.getNumber("color") ?? Colors.embed_dark,
       anonymous: interaction.options.getBoolean("anonymous") ?? false,
+      anonymousresponse: interaction.options.getBoolean("anonymousresponse") ?? false,
     }
 
     if (!interaction.guild) return void await interaction.reply({ content: `You can only make ${this.name}s in servers!`, ephemeral: true})
@@ -125,12 +130,14 @@ export default class PetitionCommand extends Command {
     }
     
     // react to the message
-    if (args.choices) {
-      for (let i = 0; i < args.choices; i++)
-        await message.react(NUMBERS[i])
-    } else {
-      await message.react(Emotes.upvote)
-      await message.react(Emotes.downvote)
+    if (!args.anonymousresponse) {
+      if (args.choices) {
+        for (let i = 0; i < args.choices; i++)
+          await message.react(NUMBERS[i])
+      } else {
+        await message.react(Emotes.upvote)
+        await message.react(Emotes.downvote)
+      }
     }
   }
 }
