@@ -3,61 +3,56 @@
  * Manages vote toggling and embed updates
  */
 
-import { ButtonInteraction, EmbedBuilder } from "discord.js";
+import { ActionRow, ButtonInteraction, EmbedBuilder, ButtonComponent, Embed, ButtonBuilder, ActionRowBuilder } from "discord.js";
 import AnonymousPollSchema from "../models/AnonymousPollSchema";
-import { Emotes } from "../config";
 
-// Define number emojis
-const NUMBERS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
-export function getEmbed(votes: Map<string, string[]>, only_one: Boolean): EmbedBuilder {
-  // Get updated vote counts and prepare for display
-  const voteResults = new Map<string, number>();
-  
+export function editEmbed(old_embed: EmbedBuilder | Embed, votes: Map<string, string[]>, only_one: Boolean): EmbedBuilder {
+  // Get updated vote counts and prepare for display  
   const all_voters: Set<string> = new Set();
-  for (const [option, voters] of votes.entries()) {
-    voteResults.set(option, voters.length);
+  for (const voters of votes.values()) {
     for (const v of voters) all_voters.add(v);
   }
 
   let description = "";
-  
-  // Handle both numbered options and Yes/No polls
-  for (const [option, voters] of votes.entries()) {
-    const count = voters.length;
-
-    // Format the label based on the option key
-    let label: string;
-    if (option === "Yes") {
-      label = `<:${Emotes.upvote}>`;
-    } else if (option === "No") {
-      label = `<:${Emotes.downvote}>`;
-    } else {
-      // For numbered options
-      const index = parseInt(option);
-      label = NUMBERS[index];
-    }
-
-    description += `${label}: ${count}\n`;
-  }
-
   const size = all_voters.size;
-  if (size > 1) {
-    description += `${size} people have voted.`;
-  } else if (size == 1) {
-    description += `One person has voted.`
+  if (size == 1) {
+    description += `${size} person has voted`
   } else {
-    description += `No one has voted.`
+    description += `${size} people have voted`
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle("Responses (Not anonymous yet; still WIP)")
-    .setDescription(description)
-    .setTimestamp(Date.now())
-
-  if (only_one) embed.setFooter({ text: "Pick only one." })
+  const embed = EmbedBuilder.from(old_embed)
+  // idk how you want to format this
+  // if (only_one) embed.setFooter({ text: "Pick only one." })
 
   return embed;
+}
+
+function updateButtons(components: ActionRow<ButtonComponent>[], votes: Map<string, string[]>): ActionRowBuilder<ButtonBuilder>[] {
+  function getLabel(customId: string | null): string | null {
+    if (customId) {
+      const args = customId.split(".");
+      const optionIndex = args[args.length - 1];
+      const users = votes.get(optionIndex);
+      if (users !== undefined) {
+        return users.length.toString()
+      }
+    }
+    return null;
+  }
+
+  // Create a copy of the existing components
+  return components.map(row => {
+    return new ActionRowBuilder<ButtonBuilder>()
+      .addComponents(...(row.components.map(component => {
+        const label = getLabel(component.customId) ?? component.label;
+        const b = ButtonBuilder.from(component);
+        if (!label) return b;
+        b.setLabel(label);
+        return b;
+      })));
+  });
 }
 
 async function closePoll(interaction: ButtonInteraction): Promise<void> {
@@ -66,11 +61,17 @@ async function closePoll(interaction: ButtonInteraction): Promise<void> {
     ephemeral: true
   });
 
-  // If there's still buttons clear them
-  console.log('Message components')
-  console.log(interaction.message.components)
-  if (interaction.message.components.length > 0)
-    await interaction.message.edit({components: []});
+  // Create a copy of the existing components
+  const components = (interaction.message.components as ActionRow<ButtonComponent>[]).map(row => {
+    return new ActionRowBuilder<ButtonBuilder>()
+      .addComponents(...(row.components.map(component => {
+        const b = ButtonBuilder.from(component);
+        b.setDisabled(true)
+        return b;
+      })));
+  })
+  // Update the message with the disabled components
+  await interaction.message.edit({ components });
 }
 
 // Handle button clicks for anonymous polls
@@ -78,18 +79,17 @@ export async function onClick(interaction: ButtonInteraction): Promise<void> {
   if (!interaction.guildId || !interaction.customId.startsWith("anon_poll.")) return;
 
   try {
-    // Parse custom_id: "anon_poll.{messageId}.{optionIndex}"
-    const [, , optionIndex] = interaction.customId.split(".");
+    // Parse custom_id: "anon_poll.{messageId}.{only_one},{optionIndex}"
+    const [, , only_one_string, optionIndex] = interaction.customId.split(".");
 
     // Footer is only set if there's a limit on responses
-    const only_one = interaction.message.embeds[1].footer !== null;
+    const only_one = only_one_string === "true";
 
     // Verify the poll exists in database
     const resp = await AnonymousPollSchema.toggleVote(
-      interaction.channelId, interaction.message.id,
-      interaction.user.id, optionIndex, only_one);
+      interaction.message.id, interaction.user.id,
+      only_one, optionIndex);
 
-    console.log('resp', resp)
     if (!resp) {
       await closePoll(interaction);
       return;
@@ -102,15 +102,17 @@ export async function onClick(interaction: ButtonInteraction): Promise<void> {
       ephemeral: true
     });
 
-    await interaction.message.edit({ embeds: [
-      interaction.message.embeds[0], getEmbed(votes, only_one)] });
+    await interaction.message.edit({
+      components: updateButtons(interaction.message.components as ActionRow<ButtonComponent>[], votes),
+      embeds: [editEmbed(interaction.message.embeds[0], votes, only_one)]
+    });
   } catch (error) {
     console.error("Error handling anonymous poll interaction:", error);
-    
+
     // Handle errors gracefully
     await interaction.reply({
       content: "An error occurred while processing your vote. Please try again later.",
       ephemeral: true
-    }).catch(() => {});
+    }).catch(() => { });
   }
 }

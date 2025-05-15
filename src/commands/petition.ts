@@ -4,7 +4,7 @@ import { Command } from "../structures/Command";
 import { Colors, Emotes } from "../config";
 import GuildSchema from "../models/GuildSchema";
 import AnonymousPollSchema from "../models/AnonymousPollSchema";
-import { getEmbed } from "../modules/anonymous_poll";
+import { editEmbed } from "../modules/anonymous_poll";
 
 const NUMBERS = [
   "1️⃣",
@@ -34,7 +34,7 @@ export default class PetitionCommand extends Command {
           description: `What is your ${name} about?`, 
           type: ApplicationCommandOptionType.String,
           required: true,
-          max_length: 1000,
+          max_length: 4096,
         },{
           name: "choices",
           description: `For ${name}s where you choose between 2-10 options, leave empty for simple yes/no.`,
@@ -56,15 +56,15 @@ export default class PetitionCommand extends Command {
           type: ApplicationCommandOptionType.Number,
           choices: Object.entries(Colors).map(v => {return {name: v[0].replaceAll('_', ' '), value: v[1]}})
         },{
-          name: "anonymous_author", 
+          name: "anonymous_author",
           description: "set to true if you don't want people seeing who created it.", 
           type: ApplicationCommandOptionType.Boolean,
         },{
-          name: "anonymous_response", 
+          name: "anonymous_response",
           description: "set to true if you want responses to be anonymous.", 
           type: ApplicationCommandOptionType.Boolean,
         },{
-          name: "only_one", 
+          name: "only_one",
           description: "set to true if you only want to allow one response.",
           type: ApplicationCommandOptionType.Boolean,
         }
@@ -163,24 +163,24 @@ export default class PetitionCommand extends Command {
       // Create buttons for anonymous voting
       const rows: ActionRowBuilder<ButtonBuilder>[] = [];
       const buttons = args.choices 
-        ? Array.from({length: args.choices}, (_, i) => 
+        ? Array.from({ length: args.choices }, (_, i) =>
             new ButtonBuilder()
-              .setCustomId(`anon_poll.${message.id}.${i}`)
-              .setLabel(`${i + 1}`)
+            .setCustomId(`anon_poll.${message.id}.${args.only_one}.${i}`)
+            .setLabel("0")
               .setEmoji(NUMBERS[i])
               .setStyle(ButtonStyle.Secondary)
           )
         : [
             new ButtonBuilder()
-              .setCustomId(`anon_poll.${message.id}.Yes`)
-              .setLabel("Yes")
-              .setEmoji("👍")
+            .setCustomId(`anon_poll.${message.id}.${args.only_one}.Yes`)
+            .setLabel("0")
+            .setEmoji(`<:${Emotes.upvote}>`)
               .setStyle(ButtonStyle.Success),
             new ButtonBuilder()
-              .setCustomId(`anon_poll.${message.id}.No`)
-              .setLabel("No")
-              .setEmoji("👎")  
-              .setStyle(ButtonStyle.Danger)
+            .setCustomId(`anon_poll.${message.id}.${args.only_one}.No`)
+            .setLabel("0")
+            .setEmoji(`<:${Emotes.downvote}>`)
+            .setStyle(ButtonStyle.Secondary)
           ];
 
       // Auto-split into rows of 5
@@ -191,15 +191,16 @@ export default class PetitionCommand extends Command {
       }
 
       // Save poll data to MongoDB
+      const DAY = 24 * 3600 * 1000;
       const poll = await AnonymousPollSchema.create({ 
-        message_id: message.id,
-        channel_id: message.channel.id,
-        votes: votes
+        _id: message.id,
+        votes: votes,
+        expires_at: new Date(Date.now() + 7 * DAY),
       })
 
       // Update the message with buttons and modified embed
       try {
-        await message.edit({ components: rows, embeds: [embed, getEmbed(votes, args.only_one)] });
+        await message.edit({ components: rows, embeds: [editEmbed(embed, votes, args.only_one)] });
       } catch (e) {
         console.error(e);
         return;

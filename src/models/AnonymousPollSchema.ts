@@ -3,21 +3,19 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const anonymousPoll = new Schema({
-  message_id: { type: String, required: true },
-  channel_id: { type: String, required: true },
+  _id: { type: String, required: true }, // message_id as mongo primary key
   votes: { type: Map, of: [String], required: true },
-  created_at: { type: Date, default: Date.now, expires: 604800 } // Auto-delete after 7 days
-},{
+  expires_at: { type: Date, required: true }
+}, {
   statics: {
     async toggleVote(
-      channel_id: string,
       message_id: string,
       user_id: string,
+      only_one: Boolean,
       optionIndex: string,
-      only_one: boolean
     ): Promise<[Map<string, string[]>, string] | null> {
-      const poll = await this.findOne({ channel_id, message_id });
-      if (!poll) return null;
+      const poll = await this.findOne({ _id: message_id });
+      if (!poll || poll.expires_at < new Date()) return null;
 
       // Ensure votes map is initialized properly
       const votes = poll.votes;
@@ -52,8 +50,5 @@ const anonymousPoll = new Schema({
     }
   }
 });
-
-// Create indexes for efficient lookups
-anonymousPoll.index({ channel_id: 1, message_id: 1 });
 
 export default mongoose.model("AnonymousPolls", anonymousPoll);
