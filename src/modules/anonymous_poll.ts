@@ -98,7 +98,7 @@ export async function onClick(interaction: ButtonInteraction): Promise<void> {
 
     // Update the message with the new embed
     await interaction.reply({
-      content: `Your vote was ${action}!`,
+      content: `Your vote "${optionIndex}" was ${action}!`,
       ephemeral: true
     });
 
