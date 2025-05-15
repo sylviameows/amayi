@@ -1,7 +1,8 @@
-import { Interaction, StringSelectMenuInteraction } from "discord.js";
+import { Interaction } from "discord.js";
 import Amayi from "../../structures/Amayi";
 import { BotEvent } from "../../structures/Event";
 import { alerts, pagination, select } from "../../modules/weather/buttons";
+import { onClick } from "../../modules/anonymous_poll";
 
 export default class ButtonEvent extends BotEvent {
   constructor(client: Amayi) {
@@ -21,6 +22,10 @@ export default class ButtonEvent extends BotEvent {
         return await alerts.run(interaction);
       if (interaction.isButton() && button.startsWith("pagination"))
         return await pagination.run(interaction);
+    }
+    else if (interaction.isButton() && interaction.customId.startsWith("anon_poll")) {
+      console.log(`clicked ${interaction.customId}!`);
+      return await onClick(interaction);
     }
 
     // interaction.reply({ content: `clicked \`${interaction.customId}\`!` })

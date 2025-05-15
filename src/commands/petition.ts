@@ -1,8 +1,10 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import Amayi from "../structures/Amayi";
 import { Command } from "../structures/Command";
 import { Colors, Emotes } from "../config";
 import GuildSchema from "../models/GuildSchema";
+import AnonymousPollSchema from "../models/AnonymousPollSchema";
+import { getEmbed } from "../modules/anonymous_poll";
 
 const NUMBERS = [
   "1️⃣",
@@ -112,7 +114,7 @@ export default class PetitionCommand extends Command {
       .setImage(args.image?.url ?? null)
 
     // create message in set OR current channel.
-    let message = undefined
+    let message: Message;
     if (settings.channel_id && settings.channel_id != interaction.channelId) {
       const channel = await interaction.guild.channels.fetch(settings.channel_id)
       if (!channel || !channel.isTextBased()) return void await interaction.editReply("Could not find a text channel.")
@@ -129,7 +131,7 @@ export default class PetitionCommand extends Command {
       message = await interaction.editReply({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
     }
     
-    // react to the message
+    // react to the message or add buttons
     if (!args.anonymousresponse) {
       if (args.choices) {
         for (let i = 0; i < args.choices; i++)
@@ -138,6 +140,61 @@ export default class PetitionCommand extends Command {
         await message.react(Emotes.upvote)
         await message.react(Emotes.downvote)
       }
+    } else {
+      // Initialize votes map for database
+      const votes = new Map<string, string[]>();
+      
+      // Initialize vote count for this option
+      if (args.choices) {
+        for (let i = 0; i < args.choices; i++) {
+          votes.set(`${i}`, []);
+        }
+      } else {
+        votes.set("Yes", []);
+        votes.set("No", []);
+      }
+
+      // Create buttons for anonymous voting
+      const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+      const buttons = args.choices 
+        ? Array.from({length: args.choices}, (_, i) => 
+            new ButtonBuilder()
+              .setCustomId(`anon_poll.${message.id}.${i}`)
+              .setLabel(`${i + 1}`)
+              .setEmoji(NUMBERS[i])
+              .setStyle(ButtonStyle.Secondary)
+          )
+        : [
+            new ButtonBuilder()
+              .setCustomId(`anon_poll.${message.id}.Yes`)
+              .setLabel("Yes")
+              .setEmoji("👍")
+              .setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+              .setCustomId(`anon_poll.${message.id}.No`)
+              .setLabel("No")
+              .setEmoji("👎")  
+              .setStyle(ButtonStyle.Danger)
+          ];
+
+      // Auto-split into rows of 5
+      for (let i = 0; i < buttons.length; i += 5) {
+        const row = new ActionRowBuilder<ButtonBuilder>()
+          .addComponents(buttons.slice(i, i + 5));
+        rows.push(row);
+      }
+
+      // Save poll data to MongoDB
+      const poll = await AnonymousPollSchema.create({ 
+        message_id: message.id,
+        guild_id: interaction.guild.id,
+        channel_id: message.channel.id,
+        votes: votes
+      })
+      await poll.save();
+
+      // Update the message with buttons and modified embed
+      await message.edit({ components: rows, embeds: [embed, getEmbed(votes)] });
     }
   }
 }
