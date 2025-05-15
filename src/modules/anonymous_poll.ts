@@ -97,8 +97,9 @@ export async function onClick(interaction: ButtonInteraction): Promise<void> {
     const [votes, action] = resp;
 
     // Update the message with the new embed
+    const optionName = parseInt(optionIndex) >= 0 ? parseInt(optionIndex) + 1 : optionIndex;
     await interaction.reply({
-      content: `Your vote "${optionIndex}" was ${action}!`,
+      content: `Your vote "${optionName}" was ${action}!`,
       ephemeral: true
     });
 
