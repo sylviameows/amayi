@@ -11,4 +11,7 @@ const macro = new Schema({
   uses: { type: Number, default: 0 }
 })
 
+// Create indexes for efficient lookups
+macro.index({ guild_id: 1, name: 1 });
+
 export default mongoose.model("Macros", macro)

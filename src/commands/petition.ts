@@ -1,8 +1,10 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import Amayi from "../structures/Amayi";
 import { Command } from "../structures/Command";
 import { Colors, Emotes } from "../config";
 import GuildSchema from "../models/GuildSchema";
+import AnonymousPollSchema from "../models/AnonymousPollSchema";
+import { editEmbed } from "../modules/anonymous_poll";
 
 const NUMBERS = [
   "1️⃣",
@@ -32,7 +34,7 @@ export default class PetitionCommand extends Command {
           description: `What is your ${name} about?`, 
           type: ApplicationCommandOptionType.String,
           required: true,
-          max_length: 4096
+          max_length: 4096,
         },{
           name: "choices",
           description: `For ${name}s where you choose between 2-10 options, leave empty for simple yes/no.`,
@@ -54,8 +56,16 @@ export default class PetitionCommand extends Command {
           type: ApplicationCommandOptionType.Number,
           choices: Object.entries(Colors).map(v => {return {name: v[0].replaceAll('_', ' '), value: v[1]}})
         },{
-          name: "anonymous", 
+          name: "anonymous_author",
           description: "set to true if you don't want people seeing who created it.", 
+          type: ApplicationCommandOptionType.Boolean,
+        },{
+          name: "anonymous_response",
+          description: "set to true if you want responses to be anonymous.", 
+          type: ApplicationCommandOptionType.Boolean,
+        },{
+          name: "only_one",
+          description: "set to true if you only want to allow one response.",
           type: ApplicationCommandOptionType.Boolean,
         }
       ]
@@ -79,7 +89,9 @@ export default class PetitionCommand extends Command {
       choices: interaction.options.getInteger("choices") ?? null,
       image: interaction.options.getAttachment("image") ?? null,
       color: interaction.options.getNumber("color") ?? Colors.embed_dark,
-      anonymous: interaction.options.getBoolean("anonymous") ?? false,
+      anonymous: interaction.options.getBoolean("anonymous_author") ?? false,
+      anonymous_response: interaction.options.getBoolean("anonymous_response") ?? false,
+      only_one: interaction.options.getBoolean("only_one") ?? false,
     }
 
     if (!interaction.guild) return void await interaction.reply({ content: `You can only make ${this.name}s in servers!`, ephemeral: true})
@@ -91,6 +103,7 @@ export default class PetitionCommand extends Command {
       return void await interaction.reply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif", ephemeral: true })   
   
     const content = settings.role ? `<@&${settings.role}>` : ""
+
     if (settings.channel_id != interaction.channelId || args.anonymous) {
       // honestly idk if this is actually needed, but i'll keep it to be safe !
       await interaction.deferReply({ ephemeral: args.anonymous })
@@ -107,7 +120,7 @@ export default class PetitionCommand extends Command {
       .setImage(args.image?.url ?? null)
 
     // create message in set OR current channel.
-    let message = undefined
+    let message: Message;
     if (settings.channel_id && settings.channel_id != interaction.channelId) {
       const channel = await interaction.guild.channels.fetch(settings.channel_id)
       if (!channel || !channel.isTextBased()) return void await interaction.editReply("Could not find a text channel.")
@@ -124,13 +137,76 @@ export default class PetitionCommand extends Command {
       message = await interaction.editReply({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
     }
     
-    // react to the message
-    if (args.choices) {
-      for (let i = 0; i < args.choices; i++)
-        await message.react(NUMBERS[i])
+    // react to the message or add buttons
+    if (!args.anonymous_response) {
+      if (args.choices) {
+        for (let i = 0; i < args.choices; i++)
+          await message.react(NUMBERS[i])
+      } else {
+        await message.react(`<:${Emotes.upvote}>`)
+        await message.react(`<:${Emotes.downvote}>`)
+      }
     } else {
-      await message.react(Emotes.upvote)
-      await message.react(Emotes.downvote)
+      // Initialize votes map for database
+      const votes = new Map<string, string[]>();
+      
+      // Initialize vote count for this option
+      if (args.choices) {
+        for (let i = 0; i < args.choices; i++) {
+          votes.set(`${i}`, []);
+        }
+      } else {
+        votes.set("Yes", []);
+        votes.set("No", []);
+      }
+
+      // Create buttons for anonymous voting
+      const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+      const buttons = args.choices 
+        ? Array.from({ length: args.choices }, (_, i) =>
+            new ButtonBuilder()
+            .setCustomId(`anon_poll.${message.id}.${args.only_one}.${i}`)
+            .setLabel("0")
+              .setEmoji(NUMBERS[i])
+              .setStyle(ButtonStyle.Secondary)
+          )
+        : [
+            new ButtonBuilder()
+            .setCustomId(`anon_poll.${message.id}.${args.only_one}.Yes`)
+            .setLabel("0")
+            .setEmoji(`<:${Emotes.upvote}>`)
+              .setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+            .setCustomId(`anon_poll.${message.id}.${args.only_one}.No`)
+            .setLabel("0")
+            .setEmoji(`<:${Emotes.downvote}>`)
+            .setStyle(ButtonStyle.Secondary)
+          ];
+
+      // Auto-split into rows of 5
+      for (let i = 0; i < buttons.length; i += 5) {
+        const row = new ActionRowBuilder<ButtonBuilder>()
+          .addComponents(buttons.slice(i, i + 5));
+        rows.push(row);
+      }
+
+      // Save poll data to MongoDB
+      const DAY = 24 * 3600 * 1000;
+      const poll = await AnonymousPollSchema.create({ 
+        _id: message.id,
+        votes: votes,
+        expires_at: new Date(Date.now() + 7 * DAY),
+      })
+
+      // Update the message with buttons and modified embed
+      try {
+        await message.edit({ components: rows, embeds: [editEmbed(embed, votes, args.only_one)] });
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+      // Save only if succeeded
+      await poll.save();
     }
   }
 }
