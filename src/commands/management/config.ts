@@ -1,10 +1,7 @@
-import { APIActionRowComponent, APIMessageActionRowComponent, ActionRowBuilder, ActionRowComponent, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, GuildMemberRoleManager, Interaction, PermissionsBitField, StringSelectMenuBuilder } from "discord.js";
+import { APIActionRowComponent, APIComponentInMessageActionRow, APITextInputComponent, ActionRowBuilder, ActionRowComponent, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, GuildMemberRoleManager, Interaction, PermissionsBitField, StringSelectMenuBuilder } from "discord.js";
 import Amayi from "../../structures/Amayi";
 import { Command } from "../../structures/Command";
 import GuildSchema from "../../models/GuildSchema";
-import { ConfigOption } from "../../structures/configuration/ConfigOptions";
-import { APIButtonComponent } from "discord.js";
-import { AnyComponentBuilder } from "discord.js";
 import { Colors, Dashboard } from "../../config";
 
 export default class ConfigCommand extends Command {
@@ -65,7 +62,7 @@ export default class ConfigCommand extends Command {
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setLabel("Dashboard").setStyle(ButtonStyle.Link).setURL(`${Dashboard.domain}${Dashboard.port == 80 ? '' : `:${Dashboard.port}`}/dashboard/${guild.id}`),
         new ButtonBuilder().setLabel("Support Server").setStyle(ButtonStyle.Link).setURL("https://discord.gg/fuuAzbcRtV"),
-      ).toJSON() as APIActionRowComponent<APIMessageActionRowComponent>] 
+      ).toJSON() as APIActionRowComponent<(APIComponentInMessageActionRow | APITextInputComponent)>] 
     })
   }
 }

@@ -1,4 +1,4 @@
-import { APIMessageActionRowComponent, ActionRowBuilder, ApplicationCommandOptionType, ButtonStyle, ChatInputCommandInteraction, ComponentType, EmbedBuilder, MessageActionRowComponentBuilder, codeBlock } from "discord.js";
+import { MessageActionRowComponent, ActionRowBuilder, ApplicationCommandOptionType, ButtonStyle, ChatInputCommandInteraction, ComponentType, EmbedBuilder, MessageActionRowComponentBuilder, codeBlock, APIComponentInMessageActionRow, APITextInputComponent } from "discord.js";
 import Amayi from "../../structures/Amayi";
 import { Command } from "../../structures/Command";
 import { Colors } from "../../config";
@@ -44,7 +44,7 @@ export default class HelpCommand extends Command {
       .setTimestamp(user.createdTimestamp)
       .addFields({name: "Username", value: codeBlock("sh", `@${args.user.username}`)})
 
-    let components: APIMessageActionRowComponent[] = []
+    let components: (APIComponentInMessageActionRow | APITextInputComponent)[] = []
     if (avatarFull) {
       components.push({
         style: ButtonStyle.Link,

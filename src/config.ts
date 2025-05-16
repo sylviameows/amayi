@@ -16,7 +16,8 @@ export const Colors = {
 
 export const Emotes = {
   upvote: "upvote:1109734066384797756",
-  downvote: "downvote:1109734067953487902"
+  downvote: "downvote:1109734067953487902",
+  loading: "a:loading:1095150129436180520"
 }
 
 const uwuifier = new Uwuifier({

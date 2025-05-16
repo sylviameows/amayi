@@ -79,7 +79,7 @@ export default class MacroCommand extends Command {
       const macro = await MacroSchema.findOne({guild_id: interaction.guild.id, name: args.name})
       if (!macro) return void await interaction.reply({content: "no macro with this name exists", ephemeral: true})
       if (macro.user_id != interaction.user.id || !(interaction.member?.roles as GuildMemberRoleManager).cache.has(guild.staff_roles[0]))
-      await MacroSchema.findOneAndRemove({guild_id: interaction.guild.id, name: args.name})
+      await MacroSchema.findOneAndDelete({guild_id: interaction.guild.id, name: args.name})
       return void await interaction.reply({ content: `deleted macro \`${args.name}\`.`, ephemeral: true})
     }
 
