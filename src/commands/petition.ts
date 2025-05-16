@@ -91,7 +91,11 @@ export default class PetitionCommand extends Command {
       color: interaction.options.getNumber("color") ?? Colors.embed_dark,
       anonymous: interaction.options.getBoolean("anonymous_author") ?? false,
       anonymous_response: interaction.options.getBoolean("anonymous_response") ?? false,
-      only_one: interaction.options.getBoolean("only_one") ?? false,
+      only_one: interaction.options.getBoolean("only_one"),
+    }
+
+    if (args.only_one == null) {
+      args.only_one = args.choices == null
     }
 
     if (!interaction.guild) return void await interaction.reply({ content: `You can only make ${this.name}s in servers!`, ephemeral: true})
@@ -102,13 +106,14 @@ export default class PetitionCommand extends Command {
     if (args.image && args.image.name.match(/([^\s]+(\.(jpe?g|png|webp|gif)))$/g) == null)
       return void await interaction.reply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif", ephemeral: true })   
   
-    const content = settings.role ? `<@&${settings.role}>` : ""
+    const content = settings.role ? `<@&${settings.role}>` : ``
 
     if (settings.channel_id != interaction.channelId || args.anonymous) {
       // honestly idk if this is actually needed, but i'll keep it to be safe !
       await interaction.deferReply({ ephemeral: args.anonymous })
     } else {
-      await interaction.reply({ content, allowedMentions: { roles: settings.role ? [settings.role] : undefined }})
+      const empty = content == ''
+      await interaction.reply({ content: empty ? `<${Emotes.loading}>` : content, allowedMentions: { roles: settings.role ? [settings.role] : undefined }})
     }
 
     const embed = new EmbedBuilder()
@@ -116,7 +121,7 @@ export default class PetitionCommand extends Command {
       .setDescription(args.content.replaceAll('\\n', '\n'))
       .setColor(args.color)
       .setTimestamp(Date.now())
-      .setFooter({ text: user.globalName ? `${user.globalName} (@${user.username})` : user.username, iconURL: user.avatarURL() ?? undefined})
+      .setAuthor({ name: user.globalName ? `${user.globalName} (@${user.username})` : user.username, iconURL: user.avatarURL() ?? undefined})
       .setImage(args.image?.url ?? null)
 
     // create message in set OR current channel.
@@ -175,7 +180,7 @@ export default class PetitionCommand extends Command {
             .setCustomId(`anon_poll.${message.id}.${args.only_one}.Yes`)
             .setLabel("0")
             .setEmoji(`<:${Emotes.upvote}>`)
-              .setStyle(ButtonStyle.Success),
+              .setStyle(ButtonStyle.Secondary),
             new ButtonBuilder()
             .setCustomId(`anon_poll.${message.id}.${args.only_one}.No`)
             .setLabel("0")

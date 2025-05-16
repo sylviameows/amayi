@@ -24,7 +24,9 @@ export function editEmbed(old_embed: EmbedBuilder | Embed, votes: Map<string, st
 
   const embed = EmbedBuilder.from(old_embed)
   // idk how you want to format this
-  // if (only_one) embed.setFooter({ text: "Pick only one." })
+  if (!only_one) description += ` • multiple choice`
+
+  embed.setFooter({text: description})
 
   return embed;
 }
