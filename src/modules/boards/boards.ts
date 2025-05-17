@@ -18,6 +18,9 @@ export class Board {
 
   async check(message: Message): Promise<[action: Action, board: ReturnData, count: Number]> {
     const reactions = message.reactions.resolve(this.emoji);
+    
+    if (this.emoji == '📌' && reactions?.me) return [Action.NONE, null, 0]; // we want to ignore past pins using the legacy system
+
     const stored_data = await BoardSchema.findOne({
       message_id: message.id
     })
