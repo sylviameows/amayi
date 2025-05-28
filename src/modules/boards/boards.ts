@@ -43,7 +43,7 @@ export class Board {
 
 export const boards = new Set([
   new Board("📌", 1),
-  new Board("💀", 3),
+  new Board("💀", 4),
   new Board("⭐", 3)
 ])
 
