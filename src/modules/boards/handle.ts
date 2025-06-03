@@ -60,13 +60,17 @@ export async function handleBoards(message: Message, causing_user: User) {
       const channel = await getChannel(message.guild)
       if (!channel || !channel.isTextBased()) return;
 
-      const board_message = await channel.messages.fetch(data.message_id)
-      if (board_message.deletable) await board_message.delete()
-
-      const parent = data.$parent()
-      if (parent && isMessageDoc(parent)) {
-        parent.boards.pull({emoji: board.emoji})
-        parent.save()
+      try {
+        const board_message = await channel.messages.fetch(data.message_id)
+        if (board_message.deletable) await board_message.delete()
+      } catch (e) {
+        // do nothing
+      } finally {
+        const parent = data.$parent()
+        if (parent && isMessageDoc(parent)) {
+          parent.boards.pull({emoji: board.emoji})
+          parent.save()
+        }
       }
     }
   })
