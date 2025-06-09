@@ -111,7 +111,7 @@ export default class PetitionCommand extends Command {
     if (args.image && args.image.name.match(/([^\s]+(\.(jpe?g|png|webp|gif)))$/g) == null)
       return void await interaction.reply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif", ephemeral: true })   
   
-    const content = settings.role ? `<@&${settings.role}>` : ``
+    const content = (settings.role && !args.poll_here) ? `<@&${settings.role}>` : ``
 
     const channel_id = args.poll_here ? interaction.channelId : settings.channel_id;
     const allowedMentions = { roles: settings.role ? [settings.role] : undefined };
