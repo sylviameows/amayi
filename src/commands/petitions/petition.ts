@@ -68,6 +68,10 @@ export default class PetitionCommand extends Command {
           name: "only_one",
           description: "set to true if you only want to allow one response.",
           type: ApplicationCommandOptionType.Boolean,
+        }, {
+          name: "poll_here",
+          description: "set to true if you to create the poll here instead.",
+          type: ApplicationCommandOptionType.Boolean,
         }
       ],
     })
