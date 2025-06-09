@@ -1,10 +1,10 @@
 import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
-import Amayi from "../structures/Amayi";
-import { Command } from "../structures/Command";
-import { Colors, Emotes } from "../config";
-import GuildSchema from "../models/GuildSchema";
-import AnonymousPollSchema from "../models/AnonymousPollSchema";
-import { editEmbed } from "../modules/anonymous_poll";
+import Amayi from "../../structures/Amayi";
+import { Command } from "../../structures/Command";
+import { Colors, Emotes } from "../../config";
+import GuildSchema from "../../models/GuildSchema";
+import AnonymousPollSchema from "../../models/AnonymousPollSchema";
+import { editEmbed } from "../../modules/anonymous_poll";
 
 const NUMBERS = [
   "1️⃣",
@@ -20,11 +20,12 @@ const NUMBERS = [
 ];
 
 export default class PetitionCommand extends Command {
-  constructor(client: Amayi, name: string = "petition") {
+  constructor(client: Amayi, name: string = "petition", poll_here: boolean = false) {
     const title = name.replace(
       /\w\S*/g, 
       (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
     )
+
     super(client, {
       name: name,
       description: `Create a ${name}.`,
@@ -68,15 +69,19 @@ export default class PetitionCommand extends Command {
           description: "set to true if you only want to allow one response.",
           type: ApplicationCommandOptionType.Boolean,
         }
-      ]
+      ],
     })
+
     this.name = name;
+    this.poll_here = poll_here;
   }
 
-  // command name for differenciating
+  // command name for differentiating
   name: string;
+  poll_here: boolean;
+
   private toTitleCase(str:string) {
-    return str.replace(
+    return str.replace('-here', '').replace(
       /\w\S*/g, 
       (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
     )
@@ -92,6 +97,7 @@ export default class PetitionCommand extends Command {
       anonymous: interaction.options.getBoolean("anonymous_author") ?? false,
       anonymous_response: interaction.options.getBoolean("anonymous_response") ?? false,
       only_one: interaction.options.getBoolean("only_one"),
+      poll_here: this.poll_here,
     }
 
     if (args.only_one == null) {
@@ -106,14 +112,16 @@ export default class PetitionCommand extends Command {
     if (args.image && args.image.name.match(/([^\s]+(\.(jpe?g|png|webp|gif)))$/g) == null)
       return void await interaction.reply({ content: "Invalid file type, I only accept .png, .jpg, .webp, and .gif", ephemeral: true })   
   
-    const content = settings.role ? `<@&${settings.role}>` : ``
+    const content = (settings.role && !args.poll_here) ? `<@&${settings.role}>` : ``
 
-    if (settings.channel_id != interaction.channelId || args.anonymous) {
+    const channel_id = args.poll_here ? interaction.channelId : settings.channel_id;
+    const allowedMentions = { roles: settings.role ? [settings.role] : undefined };
+    if (channel_id != interaction.channelId || args.anonymous) {
       // honestly idk if this is actually needed, but i'll keep it to be safe !
       await interaction.deferReply({ ephemeral: args.anonymous })
     } else {
       const empty = content == ''
-      await interaction.reply({ content: empty ? `<${Emotes.loading}>` : content, allowedMentions: { roles: settings.role ? [settings.role] : undefined }})
+      await interaction.reply({ content: empty ? `<${Emotes.loading}>` : content, allowedMentions})
     }
 
     const embed = new EmbedBuilder()
@@ -126,20 +134,20 @@ export default class PetitionCommand extends Command {
 
     // create message in set OR current channel.
     let message: Message;
-    if (settings.channel_id && settings.channel_id != interaction.channelId) {
-      const channel = await interaction.guild.channels.fetch(settings.channel_id)
+    if (channel_id && channel_id != interaction.channelId) {
+      const channel = await interaction.guild.channels.fetch(channel_id)
       if (!channel || !channel.isTextBased()) return void await interaction.editReply("Could not find a text channel.")
       if (!interaction.guild.members.me?.permissionsIn(channel).has(["SendMessages", "AttachFiles"])) return void await interaction.editReply(`I do not have the permissions \`SendMessages\` and \`AttachFiles\` in <#${channel.id}>`)
-      message = await channel.send({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
+      message = await channel.send({ content, embeds: [embed], allowedMentions })
       await interaction.editReply(`Successfully sent ${this.name}${args.anonymous ? " anonymously " : " "}in <#${channel.id}>`)
     } else if (args.anonymous) {
       // this section of code is needed since anonymous petitions must be sent in a separate message.
-      const channel = settings.channel_id ? await interaction.guild.channels.fetch(settings.channel_id) : interaction.channel
+      const channel = channel_id ? await interaction.guild.channels.fetch(channel_id) : interaction.channel
       if (!channel || !channel.isTextBased() || channel.isDMBased()) return void await interaction.editReply("Could not find a text channel.")
-      message = await channel.send({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
+      message = await channel.send({ content, embeds: [embed], allowedMentions })
       await interaction.editReply(`Successfully sent ${this.name} anonymously in <#${channel.id}>`)
     } else {
-      message = await interaction.editReply({ content, embeds: [embed], allowedMentions: { roles: settings.role ? [settings.role] : undefined } })
+      message = await interaction.editReply({ content, embeds: [embed], allowedMentions })
     }
     
     // react to the message or add buttons
