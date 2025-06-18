@@ -68,7 +68,7 @@ export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
 
     client.on("data", (data: Buffer) => {
       //const response = JSON.parse(decrypt(data, key));
-      const response = JSON.parse(data);
+      const response = JSON.parse(data.toString("utf-8"));
       console.log(response)
       resolve(response as TimezoneResponse);
       client.end();
