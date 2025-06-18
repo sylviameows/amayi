@@ -61,12 +61,14 @@ export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
     const port = process.env.TIMEZONE_API_PORT;
     if (!key || !host || !port) throw new Error("Timezone API is missing .env variables!");
 
-    const encryptedMessage = encrypt(JSON.stringify(message), key);
+    // const encryptedMessage = encrypt(JSON.stringify(message), key);
+    const encryptedMessage = Buffer.from(JSON.stringify(message), "utf-8");
 
     const client = net.createConnection({ host: host, port: Number.parseInt(port) });
 
     client.on("data", (data: Buffer) => {
-      const response = JSON.parse(decrypt(data, key));
+      //const response = JSON.parse(decrypt(data, key));
+      const response = JSON.parse(data);
       console.log(response)
       resolve(response as TimezoneResponse);
       client.end();
