@@ -1,4 +1,5 @@
-import * as net from 'net';
+// import * as net from 'net';
+import * as dgram from 'dgram'
 import * as crypto from 'crypto';
 import { Snowflake } from 'discord.js';
 
@@ -54,7 +55,8 @@ function decrypt(encodedData: Buffer, key: string): string {
     return decrypted.toString("utf-8");
 }
 
-export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
+// TCP
+/*export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
   return new Promise((resolve, reject) => {
     const key = process.env.TIMEZONE_API_KEY;
     const host = process.env.TIMEZONE_API_HOST;
@@ -83,5 +85,43 @@ export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
       resolve({code: 404, message:"Not Found"})
       client.end()
     });
+  });
+};*/
+
+// UDP
+export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
+  return new Promise((resolve, reject) => {
+    const key = process.env.TIMEZONE_API_KEY;
+    const host = process.env.TIMEZONE_API_HOST;
+    const port = process.env.TIMEZONE_API_PORT;
+    if (!key || !host || !port) throw new Error("Timezone API is missing .env variables!");
+
+    // const encryptedMessage = encrypt(JSON.stringify(message), key);
+    const encryptedMessage = Buffer.from(JSON.stringify(message), "utf-8");
+
+    const client = dgram.createSocket('udp4');
+    let timeout: NodeJS.Timeout;
+    client.on('message', (message, rinfo) => {
+      clearTimeout(timeout);
+      //const response = JSON.parse(decrypt(data, key));
+      const response = JSON.parse(message.toString("utf-8"));
+      console.log(response)
+      resolve(response as TimezoneResponse)
+      client.close()
+    });
+
+    client.send(encryptedMessage, Number.parseInt(port), host, (err) => {
+      if(err) {
+        console.log("Error: ", err.message);
+        resolve({code: 400, message:"Bad Request"});
+        client.close()
+      }
+    });
+
+    timeout = setTimeout(() => {
+      console.log("Timeout: No response received in 3 seconds");
+      client.close();
+      resolve({code: 500, message:"Internal Server Error"});
+    }, 3000);
   });
 };
