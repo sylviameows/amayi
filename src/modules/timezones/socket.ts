@@ -22,10 +22,10 @@ interface UserData {
 }
 
 export enum RequestType {
-  TIMEZONE_FROM_ALIAS = "RequestType.TIMEZONE_FROM_ALIAS_REQUEST",
-  TIMEZONE = "RequestType.TIMEZONE_REQUEST",
-  ALIAS = "RequestType.ALIAS_REQUEST",
-  USER_FROM_ALIAS = "RequestType.USER_FROM_ALIAS_REQUEST"
+  TIMEZONE_FROM_ALIAS = "TIMEZONE_FROM_ALIAS",
+  TIMEZONE = "TIMEZONE_FROM_USERID",
+  ALIAS = "ALIAS_FROM_USERID",
+  USER_FROM_ALIAS = "USERID_FROM_ALIAS"
 }
 
 function encrypt(text: string, key: string): Buffer {
