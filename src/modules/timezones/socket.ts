@@ -10,6 +10,7 @@ export interface TimezoneResponse {
 
 export interface TimezoneRequest {
   requestType: RequestType,
+  apiKey: string | null,
   data: AliasData | UserData
 }
 
@@ -64,6 +65,7 @@ function decrypt(encodedData: Buffer, key: string): string {
     if (!key || !host || !port) throw new Error("Timezone API is missing .env variables!");
 
     // const encryptedMessage = encrypt(JSON.stringify(message), key);
+    message.apiKey = key
     const encryptedMessage = Buffer.from(JSON.stringify(message), "utf-8");
 
     const client = net.createConnection({ host: host, port: Number.parseInt(port) });
@@ -97,6 +99,7 @@ export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
     if (!key || !host || !port) throw new Error("Timezone API is missing .env variables!");
 
     // const encryptedMessage = encrypt(JSON.stringify(message), key);
+    message.apiKey = key
     const encryptedMessage = Buffer.from(JSON.stringify(message), "utf-8");
 
     const client = dgram.createSocket('udp4');

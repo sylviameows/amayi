@@ -5,6 +5,7 @@ export default {
   fromId: async (userId: Snowflake): Promise<string | null> => {
     const response = await send({
       requestType: RequestType.TIMEZONE,
+      apiKey: null,
       data: {
         userId
       }
@@ -17,6 +18,7 @@ export default {
   aliasFromUserId: async (userId: Snowflake): Promise<string | null> => {
     const response = await send({
       requestType: RequestType.ALIAS,
+      apiKey: null,
       data: {
         userId
       }
@@ -29,6 +31,7 @@ export default {
   fromAlias: async (alias: string): Promise<string | null> => {
     const response = await send({
       requestType: RequestType.TIMEZONE_FROM_ALIAS,
+      apiKey: null,
       data: {
         alias
       }
@@ -41,6 +44,7 @@ export default {
   userIdFromAlias: async (alias: string): Promise<string | null> => {
     const response = await send({
       requestType: RequestType.USER_FROM_ALIAS,
+      apiKey: null,
       data: {
         alias
       }
