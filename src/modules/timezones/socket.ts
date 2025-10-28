@@ -8,9 +8,11 @@ export interface TimezoneResponse {
   message: string,
 }
 
+export type PartialTimezoneRequest = Omit<TimezoneRequest, "apiKey">
+
 export interface TimezoneRequest {
   requestType: RequestType,
-  apiKey: string | null,
+  apiKey: string,
   data: AliasData | UserData
 }
 
@@ -91,7 +93,7 @@ function decrypt(encodedData: Buffer, key: string): string {
 };*/
 
 // UDP
-export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
+export const send = (partial: PartialTimezoneRequest): Promise<TimezoneResponse> => {
   return new Promise((resolve, reject) => {
     const key = process.env.TIMEZONE_API_KEY;
     const host = process.env.TIMEZONE_API_HOST;
@@ -99,8 +101,8 @@ export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
     if (!key || !host || !port) throw new Error("Timezone API is missing .env variables!");
 
     // const encryptedMessage = encrypt(JSON.stringify(message), key);
-    message.apiKey = key
-    const encryptedMessage = Buffer.from(JSON.stringify(message), "utf-8");
+    const request: TimezoneRequest = { ...partial, apiKey: key }
+    const encryptedRequest = Buffer.from(JSON.stringify(request), "utf-8");
 
     const client = dgram.createSocket('udp4');
     let timeout: NodeJS.Timeout;
@@ -113,7 +115,7 @@ export const send = (message: TimezoneRequest): Promise<TimezoneResponse> => {
       client.close()
     });
 
-    client.send(encryptedMessage, Number.parseInt(port), host, (err) => {
+    client.send(encryptedRequest, Number.parseInt(port), host, (err) => {
       if(err) {
         console.log("Error: ", err.message);
         resolve({code: 400, message:"Bad Request"});
