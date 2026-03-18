@@ -51,4 +51,5 @@ const anonymousPoll = new Schema({
   }
 });
 
+anonymousPoll.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
 export default mongoose.model("AnonymousPolls", anonymousPoll);
